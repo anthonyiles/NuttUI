@@ -1,0 +1,9 @@
+## Interface: 120000
+## Title: NuttUI
+## Notes: Simple UI tweaks for Anthony
+## Author: Anthony
+## SavedVariables: NuttUIDB
+## IconTexture: Interface\AddOns\NuttUI\Media\icon
+
+utils/Tooltip.lua
+NuttUI.lua
