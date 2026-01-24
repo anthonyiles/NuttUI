@@ -6,4 +6,5 @@
 ## IconTexture: Interface\AddOns\NuttUI\Media\icon
 
 utils/Tooltip.lua
+modules/Databar.lua
 NuttUI.lua

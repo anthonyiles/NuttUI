@@ -34,6 +34,14 @@ eventHandler:SetScript("OnEvent", function(self, event, addonName)
         if NuttUI.Tooltip and NuttUI.Tooltip.Init then
             NuttUI.Tooltip.Init()
         end
+
+        if NuttUI.Databar and NuttUI.Databar.Init then
+            NuttUI.Databar:Init()
+        end
+        
+        if NuttUI.AutoRepair and NuttUI.AutoRepair.Init then
+            NuttUI.AutoRepair:Init()
+        end
         
         self:UnregisterEvent("ADDON_LOADED")
     end
