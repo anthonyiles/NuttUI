@@ -63,9 +63,6 @@ local function UpdateAnchor(tooltip, parent)
 
     -- "ANCHOR_NONE" gives us full control
     tooltip:SetOwner(parent or UIParent, "ANCHOR_NONE")
-    
-    -- Initial position to prevent flashing
-    MoveTooltipToCursor(tooltip)
 end
 
 -- -----------------------------------------------------------------------------
@@ -86,6 +83,12 @@ function NuttUI.Tooltip.Init()
     end)
     
     -- Continuous movement
+    GameTooltip:HookScript("OnShow", function(self)
+        if self.isNuttUIPinned then
+            MoveTooltipToCursor(self)
+        end
+    end)
+
     GameTooltip:HookScript("OnUpdate", function(self)
         if self.isNuttUIPinned then
             MoveTooltipToCursor(self)
