@@ -6,5 +6,9 @@
 ## IconTexture: Interface\AddOns\NuttUI\Media\icon
 
 utils/Tooltip.lua
-modules/Databar.lua
+modules/Databar/Core.lua
+modules/Databar/Slots/Guild.lua
+modules/Databar/Slots/Friends.lua
+modules/Databar/Slots/LootSpec.lua
+modules/Databar/Slots/Durability.lua
 NuttUI.lua
