@@ -9,6 +9,9 @@ print("|cff00ff00NuttUI|r loaded. Type /nui for options.")
 local defaults = {
     HideHealthbar = true,
     PinToCursor = false,
+    PinAnchor = "BOTTOMLEFT",
+    PinOffsetX = 0,
+    PinOffsetY = 0,
 }
 
 --------------------------------------------------------------------------------
@@ -21,9 +24,9 @@ eventHandler:SetScript("OnEvent", function(self, event, addonName)
     if event == "ADDON_LOADED" and addonName == "NuttUI" then
         -- Load SavedVariables
         NuttUIDB = NuttUIDB or {}
-        for k, v in pairs(defaults) do
-            if NuttUIDB[k] == nil then
-                NuttUIDB[k] = v
+        for key, value in pairs(defaults) do
+            if NuttUIDB[key] == nil then
+                NuttUIDB[key] = value
             end
         end
         
@@ -46,9 +49,9 @@ function NuttUI:CreateOptions()
     category = Settings.RegisterVerticalLayoutCategory("NuttUI")
     
     -- Helper for boolean defaults
-    local function GetValueOrDefault(tbl, key, default)
-        if tbl and tbl[key] ~= nil then
-            return tbl[key]
+    local function GetValueOrDefault(table, key, default)
+        if table and table[key] ~= nil then
+            return table[key]
         end
         return default
     end
@@ -95,13 +98,93 @@ function NuttUI:CreateOptions()
         SetPinToCursor
     )
     Settings.CreateCheckbox(category, settingPin, "Anchor unit tooltips to the mouse cursor.")
+
+    -- Pin Anchor Dropdown
+    local function GetPinAnchor()
+        return GetValueOrDefault(NuttUIDB, "PinAnchor", defaults.PinAnchor)
+    end
+    
+    local function SetPinAnchor(value)
+        if not NuttUIDB then NuttUIDB = {} end
+        NuttUIDB.PinAnchor = value
+    end
+
+    local function GetPinAnchorOptions()
+        return function()
+            local container = Settings.CreateControlTextContainer()
+            container:Add("BOTTOMLEFT", "Bottom Left")
+            container:Add("BOTTOMRIGHT", "Bottom Right")
+            container:Add("TOPLEFT", "Top Left")
+            container:Add("TOPRIGHT", "Top Right")
+            container:Add("CENTER", "Center")
+            return container:GetData()
+        end
+    end
+
+    local settingAnchor = Settings.RegisterProxySetting(
+        category,
+        "NuttUI_PinAnchor",
+        Settings.VarType.String,
+        "Anchor Point",
+        defaults.PinAnchor,
+        GetPinAnchor,
+        SetPinAnchor
+    )
+    Settings.CreateDropdown(category, settingAnchor, GetPinAnchorOptions(), "Which part of the tooltip attaches to the cursor.")
+
+    -- Pin Offset X Slider
+    local function GetPinOffsetX()
+        return GetValueOrDefault(NuttUIDB, "PinOffsetX", defaults.PinOffsetX)
+    end
+    
+    local function SetPinOffsetX(value)
+        if not NuttUIDB then NuttUIDB = {} end
+        NuttUIDB.PinOffsetX = value
+    end
+
+    local settingOffsetX = Settings.RegisterProxySetting(
+        category,
+        "NuttUI_PinOffsetX",
+        Settings.VarType.Number,
+        "Offset X",
+        defaults.PinOffsetX,
+        GetPinOffsetX,
+        SetPinOffsetX
+    )
+    -- Range: -100 to 100, Step: 1
+    local optionsX = Settings.CreateSliderOptions(-100, 100, 1)
+    optionsX:SetLabelFormatter(MinimalSliderWithSteppersMixin.Label.Right)
+    Settings.CreateSlider(category, settingOffsetX, optionsX, "Horizontal offset from cursor.")
+
+    -- Pin Offset Y Slider
+    local function GetPinOffsetY()
+        return GetValueOrDefault(NuttUIDB, "PinOffsetY", defaults.PinOffsetY)
+    end
+    
+    local function SetPinOffsetY(value)
+        if not NuttUIDB then NuttUIDB = {} end
+        NuttUIDB.PinOffsetY = value
+    end
+
+    local settingOffsetY = Settings.RegisterProxySetting(
+        category,
+        "NuttUI_PinOffsetY",
+        Settings.VarType.Number,
+        "Offset Y",
+        defaults.PinOffsetY,
+        GetPinOffsetY,
+        SetPinOffsetY
+    )
+    -- Range: -100 to 100, Step: 1
+    local optionsY = Settings.CreateSliderOptions(-100, 100, 1)
+    optionsY:SetLabelFormatter(MinimalSliderWithSteppersMixin.Label.Right)
+    Settings.CreateSlider(category, settingOffsetY, optionsY, "Vertical offset from cursor.")
     
     Settings.RegisterAddOnCategory(category)
 end
 
 -- Initialize Options immediately (Settings API handles lazy loading usually, but safe to register early)
 NuttUI:CreateOptions()
-
 
 --------------------------------------------------------------------------------
 -- Slash Commands

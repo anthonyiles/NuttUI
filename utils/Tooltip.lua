@@ -30,14 +30,42 @@ local function HideStatusBar(tooltip)
     end
 end
 
+local function GetValueOrDefault(table, key, default)
+    if table and table[key] ~= nil then
+        return table[key]
+    end
+    return default
+end
+
+local function MoveTooltipToCursor(tooltip)
+    local anchor = GetValueOrDefault(NuttUIDB, "PinAnchor", "BOTTOMLEFT")
+    local offsetX = GetValueOrDefault(NuttUIDB, "PinOffsetX", 0)
+    local offsetY = GetValueOrDefault(NuttUIDB, "PinOffsetY", 0)
+
+    local x, y = GetCursorPosition()
+    local scale = UIParent:GetEffectiveScale()
+    x = x / scale
+    y = y / scale
+
+    tooltip:ClearAllPoints()
+    tooltip:SetPoint(anchor, UIParent, "BOTTOMLEFT", x + offsetX, y + offsetY)
+end
+
 local function UpdateAnchor(tooltip, parent)
     -- If option is disabled, do nothing (let default behavior happen)
-    if not NuttUIDB or not NuttUIDB.PinToCursor then return end
+    if not NuttUIDB or not NuttUIDB.PinToCursor then 
+        tooltip.isNuttUIPinned = false
+        return 
+    end
 
-    -- Only modify anchor for GameTooltip when targeting units/world objects typically
-    -- We need to be careful not to break other addons or weird anchors
+    -- Toggle flag so OnUpdate knows to work
+    tooltip.isNuttUIPinned = true
+
+    -- "ANCHOR_NONE" gives us full control
+    tooltip:SetOwner(parent or UIParent, "ANCHOR_NONE")
     
-    tooltip:SetOwner(parent or UIParent, "ANCHOR_CURSOR")
+    -- Initial position to prevent flashing
+    MoveTooltipToCursor(tooltip)
 end
 
 -- -----------------------------------------------------------------------------
@@ -53,10 +81,19 @@ function NuttUI.Tooltip.Init()
     end
 
     -- 2. Pin to Cursor logic
-    -- We hook the default anchor setting.
-    -- When GameTooltip:SetDefaultAnchor is called (which happens on mouseover of units),
-    -- we override it if our setting is enabled.
     hooksecurefunc("GameTooltip_SetDefaultAnchor", function(tooltip, parent)
         UpdateAnchor(tooltip, parent)
+    end)
+    
+    -- Continuous movement
+    GameTooltip:HookScript("OnUpdate", function(self)
+        if self.isNuttUIPinned then
+            MoveTooltipToCursor(self)
+        end
+    end)
+    
+    -- Cleanup flag
+    GameTooltip:HookScript("OnHide", function(self)
+        self.isNuttUIPinned = false
     end)
 end
