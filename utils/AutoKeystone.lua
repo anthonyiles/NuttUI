@@ -27,6 +27,8 @@ function NuttUI.AutoKeystone:Init()
 end
 
 function NuttUI.AutoKeystone:TrySlotKeystone()
+    if NuttUIDB and NuttUIDB.AutoKeystone == false then return end
+    
     for bag = 0, NUM_BAG_SLOTS do
         for slot = 1, C_Container.GetContainerNumSlots(bag) do
             local item = C_Container.GetContainerItemInfo(bag, slot)

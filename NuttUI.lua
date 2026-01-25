@@ -12,6 +12,7 @@ local defaults = {
     PinAnchor = "BOTTOMLEFT",
     PinOffsetX = 0,
     PinOffsetY = 0,
+    AutoKeystone = true,
 }
 
 --------------------------------------------------------------------------------
@@ -204,6 +205,27 @@ function NuttUI:CreateOptions()
     optionsY:SetLabelFormatter(MinimalSliderWithSteppersMixin.Label.Right)
     Settings.CreateSlider(category, settingOffsetY, optionsY, "Vertical offset from cursor.")
     
+    -- Auto Keystone Checkbox
+    local function GetAutoKeystone()
+        return GetValueOrDefault(NuttUIDB, "AutoKeystone", defaults.AutoKeystone)
+    end
+    
+    local function SetAutoKeystone(value)
+        if not NuttUIDB then NuttUIDB = {} end
+        NuttUIDB.AutoKeystone = value
+    end
+
+    local settingAutoKeystone = Settings.RegisterProxySetting(
+        category, 
+        "NuttUI_AutoKeystone", 
+        Settings.VarType.Boolean, 
+        "Automatically place mythic keystone?",
+        defaults.AutoKeystone, 
+        GetAutoKeystone, 
+        SetAutoKeystone
+    )
+    Settings.CreateCheckbox(category, settingAutoKeystone, "Automatically slot the correct keystone when opening the Font of Power.")
+
     Settings.RegisterAddOnCategory(category)
     
     self:CreateDatabarOptions(category)
