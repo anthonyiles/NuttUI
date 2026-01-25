@@ -5,6 +5,8 @@
 ## SavedVariables: NuttUIDB
 ## IconTexture: Interface\AddOns\NuttUI\Media\icon
 
+## X-Curse-Project-ID: 1444088
+
 utils/Tooltip.lua
 modules/Databar/Core.lua
 modules/Databar/Slots/Guild.lua
