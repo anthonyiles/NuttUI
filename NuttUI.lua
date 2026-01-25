@@ -71,7 +71,7 @@ end)
 local category, layout
 
 function NuttUI:CreateOptions()
-    category = Settings.RegisterVerticalLayoutCategory("NuttUI")
+    category, layout = Settings.RegisterVerticalLayoutCategory("NuttUI Tweaks")
     
     -- Helper for boolean defaults
     local function GetValueOrDefault(table, key, default)
@@ -80,6 +80,9 @@ function NuttUI:CreateOptions()
         end
         return default
     end
+
+    -- 1. Tooltip Settings Header
+    layout:AddInitializer(CreateSettingsListSectionHeaderInitializer("Tooltip Settings"))
 
     -- Hide Healthbar Checkbox
     local function GetHideHealthbar()
@@ -204,6 +207,9 @@ function NuttUI:CreateOptions()
     local optionsY = Settings.CreateSliderOptions(-100, 100, 1)
     optionsY:SetLabelFormatter(MinimalSliderWithSteppersMixin.Label.Right)
     Settings.CreateSlider(category, settingOffsetY, optionsY, "Vertical offset from cursor.")
+    
+    -- 2. Mythic+ Utils Header
+    layout:AddInitializer(CreateSettingsListSectionHeaderInitializer("Mythic+ Utils"))
     
     -- Auto Keystone Checkbox
     local function GetAutoKeystone()
