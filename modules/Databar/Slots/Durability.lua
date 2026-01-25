@@ -1,10 +1,10 @@
 local _, NuttUI = ...
 
-NuttUI.Databar:RegisterBit({
+NuttUI.Databar:RegisterSlot({
     name = "Durability",
     events = {"UPDATE_INVENTORY_DURABILITY"},
     interval = 5,
-    Update = function(self)
+    Update = function(self, label)
         local low = 100
         for i = 1, 18 do
             local current, max = GetInventoryItemDurability(i)
@@ -13,11 +13,12 @@ NuttUI.Databar:RegisterBit({
                 if region_pct < low then low = region_pct end
             end
         end
-        local color = "ffffff"
+        -- Default green (00ff00) unless low
+        local color = "00ff00"
         if low < 20 then color = "ff0000"
         elseif low < 50 then color = "ffff00" end
         
-        return string.format("Dur |cff%s%d%%|r", color, low)
+        return string.format("|cffffffff%s|r |cff%s%d%%|r", label or "Dur", color, low)
     end,
     OnEnter = function(self)
         GameTooltip:AddLine("Durability Breakdown")
@@ -55,8 +56,8 @@ NuttUI.Databar:RegisterBit({
                     end
                     
                     rootDescription:CreateRadio("None", function() return current == "None" end, function() SetAutoRepair("None") end)
-                    rootDescription:CreateRadio("Personal Funds", function() return current == "Player" end, function() SetAutoRepair("Player") end)
-                    rootDescription:CreateRadio("Guild Funds", function() return current == "Guild" end, function() SetAutoRepair("Guild") end)
+                    rootDescription:CreateRadio("Personal Gold", function() return current == "Player" end, function() SetAutoRepair("Player") end)
+                    rootDescription:CreateRadio("Guild Gold", function() return current == "Guild" end, function() SetAutoRepair("Guild") end)
                 end)
             else
                 -- Fallback 
@@ -72,8 +73,8 @@ NuttUI.Databar:RegisterBit({
                 local menu = {
                     { text = "Auto Repair", isTitle = true, notCheckable = true },
                     { text = "None", func = function() SetAutoRepair("None") end, checked = (current == "None") },
-                    { text = "Personal Funds", func = function() SetAutoRepair("Player") end, checked = (current == "Player") },
-                    { text = "Guild Funds", func = function() SetAutoRepair("Guild") end, checked = (current == "Guild") }
+                    { text = "Personal Gold", func = function() SetAutoRepair("Player") end, checked = (current == "Player") },
+                    { text = "Guild Gold", func = function() SetAutoRepair("Guild") end, checked = (current == "Guild") }
                 }
                 EasyMenu(menu, self.menuFrame, "cursor", 0 , 0, "MENU")
             end

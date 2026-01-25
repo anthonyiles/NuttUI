@@ -1,10 +1,10 @@
 local _, NuttUI = ...
 
-NuttUI.Databar:RegisterBit({
+NuttUI.Databar:RegisterSlot({
     name = "Friends",
     events = {"FRIENDLIST_UPDATE", "BN_FRIEND_INFO_CHANGED"},
     interval = 10,
-    Update = function(self)
+    Update = function(self, label)
         local onlineFriends = C_FriendList.GetNumOnlineFriends()
         local _, numBNet = BNGetNumFriends()
         local wowBNetOnline = 0
@@ -18,7 +18,7 @@ NuttUI.Databar:RegisterBit({
             end
         end
         
-        return string.format("Friends: %d", (onlineFriends + wowBNetOnline))
+        return string.format("|cffffffff%s:|r |cff00ff00%d|r", label or "Friends", (onlineFriends + wowBNetOnline))
     end,
     OnEnter = function(self)
         local onlineFriends = C_FriendList.GetNumOnlineFriends()
@@ -80,6 +80,76 @@ NuttUI.Databar:RegisterBit({
         GameTooltip:AddLine("<Left-Click> to open Friends", 0.5, 0.5, 0.5)
     end,
     OnClick = function(self, button)
-        ToggleFriendsFrame()
+        if button == "LeftButton" then
+            ToggleFriendsFrame()
+        elseif button == "RightButton" then
+            if MenuUtil then
+                MenuUtil.CreateContextMenu(self, function(owner, rootDescription)
+                    rootDescription:CreateTitle("Friends Actions")
+                    
+                    local inviteMenu = rootDescription:CreateButton("Invite")
+                    local whisperMenu = rootDescription:CreateButton("Whisper")
+                    
+                    local friends = {}
+                    
+                    -- 1. Server Friends
+                    local numFriends = C_FriendList.GetNumFriends()
+                    for i = 1, numFriends do
+                        local info = C_FriendList.GetFriendInfoByIndex(i)
+                        if info and info.connected then
+                            table.insert(friends, { name = info.name, class = info.className })
+                        end
+                    end
+                    
+                    -- 2. BNet Friends (WoW Only)
+                    local numBNet = BNGetNumFriends()
+                    for i = 1, numBNet do
+                         local accountInfo = C_BattleNet.GetFriendAccountInfo(i)
+                         if accountInfo and accountInfo.gameAccountInfo and accountInfo.gameAccountInfo.isOnline then
+                             if accountInfo.gameAccountInfo.clientProgram == BNET_CLIENT_WOW then
+                                 local charName = accountInfo.gameAccountInfo.characterName
+                                 local className = accountInfo.gameAccountInfo.className
+                                 local realmName = accountInfo.gameAccountInfo.realmName or ""
+                                 
+                                 if charName and charName ~= "" then
+                                     local inviteName = charName
+                                     -- Handle Cross-Realm
+                                     local cleanRealm = string.gsub(realmName, " ", "")
+                                     local myRealm = string.gsub(GetRealmName(), " ", "")
+                                     
+                                     if cleanRealm ~= "" and cleanRealm ~= myRealm then
+                                         inviteName = charName .. "-" .. cleanRealm
+                                     end
+                                     
+                                     -- Add BNet name too? Usually invite needs CharName
+                                     table.insert(friends, { name = inviteName, display = charName, class = className, bnet = accountInfo.accountName })
+                                 end
+                             end
+                         end
+                    end
+                    
+                    table.sort(friends, function(a, b) return a.name < b.name end)
+
+                    -- Dedup (if friend is on both lists?) - Optional, unlikely to be exact dup char name unless added twice
+                    
+                    if #friends == 0 then
+                        inviteMenu:CreateTitle("No online friends")
+                        whisperMenu:CreateTitle("No online friends")
+                    else
+                        for _, f in ipairs(friends) do
+                            local color = f.class and C_ClassColor.GetClassColor(f.class)
+                            local text = f.display or f.name
+                            if f.bnet then text = text .. " (|cff00ccff" .. f.bnet .. "|r)" end
+                            
+                            local displayText = text
+                            if color then displayText = color:WrapTextInColorCode(text) end
+                            
+                            inviteMenu:CreateButton(displayText, function() C_PartyInfo.InviteUnit(f.name) end)
+                            whisperMenu:CreateButton(displayText, function() ChatFrame_OpenChat("/w " .. f.name .. " ") end)
+                        end
+                    end
+                end)
+            end
+        end
     end
 })

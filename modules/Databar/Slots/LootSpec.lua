@@ -1,20 +1,23 @@
 local _, NuttUI = ...
 
-NuttUI.Databar:RegisterBit({
+NuttUI.Databar:RegisterSlot({
     name = "LootSpec",
     events = {"PLAYER_LOOT_SPEC_UPDATED", "PLAYER_SPECIALIZATION_CHANGED"},
     interval = 2,
-    Update = function(self)
+    Update = function(self, label)
         local specID = GetLootSpecialization()
         if specID == 0 then specID = GetSpecializationInfo(GetSpecialization()) end
         
-        if not specID then return "Spec: N/A" end
+        local labelText = label or "Spec"
+        
+        if not specID then return string.format("|cffffffff%s:|r |cff999999N/A|r", labelText) end
         
         local _, name, _, icon = GetSpecializationInfoByID(specID)
+        local val = name or "Spec"
         if icon then
-            return string.format("|T%s:14:14:0:0:64:64:4:60:4:60|t %s", icon, name)
+            val = string.format("|T%s:14:14:0:0:64:64:4:60:4:60|t %s", icon, name)
         end
-        return name or "Spec"
+        return string.format("|cffffffff%s:|r |cff00ff00%s|r", labelText, val)
     end,
     OnEnter = function(self)
         GameTooltip:AddLine("Loot Specialization")
