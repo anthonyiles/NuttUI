@@ -5,8 +5,9 @@ NuttUI.Databar:RegisterSlot({
     events = {"FRIENDLIST_UPDATE", "BN_FRIEND_INFO_CHANGED"},
     interval = 10,
     Update = function(self, label)
-        local onlineFriends = C_FriendList.GetNumOnlineFriends()
+        local onlineFriends = C_FriendList.GetNumOnlineFriends() or 0
         local _, numBNet = BNGetNumFriends()
+        numBNet = numBNet or 0
         local wowBNetOnline = 0
         
         for i = 1, numBNet do
@@ -21,8 +22,9 @@ NuttUI.Databar:RegisterSlot({
         return string.format("|cffffffff%s:|r |cff00ff00%d|r", label or "Friends", (onlineFriends + wowBNetOnline))
     end,
     OnEnter = function(self)
-        local onlineFriends = C_FriendList.GetNumOnlineFriends()
-        local numBNet = BNGetNumFriends()
+        local onlineFriends = C_FriendList.GetNumOnlineFriends() or 0
+        local _, numBNet = BNGetNumFriends()
+        numBNet = numBNet or 0
         local wowBNetOnline = 0
         
         -- Calculate total for header (optional, or just list them)
@@ -93,7 +95,7 @@ NuttUI.Databar:RegisterSlot({
                     local friends = {}
                     
                     -- 1. Server Friends
-                    local numFriends = C_FriendList.GetNumFriends()
+                    local numFriends = C_FriendList.GetNumFriends() or 0
                     for i = 1, numFriends do
                         local info = C_FriendList.GetFriendInfoByIndex(i)
                         if info and info.connected then
@@ -102,7 +104,8 @@ NuttUI.Databar:RegisterSlot({
                     end
                     
                     -- 2. BNet Friends (WoW Only)
-                    local numBNet = BNGetNumFriends()
+                    local _, numBNet = BNGetNumFriends()
+                    numBNet = numBNet or 0
                     for i = 1, numBNet do
                          local accountInfo = C_BattleNet.GetFriendAccountInfo(i)
                          if accountInfo and accountInfo.gameAccountInfo and accountInfo.gameAccountInfo.isOnline then
