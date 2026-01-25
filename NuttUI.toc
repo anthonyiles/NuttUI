@@ -8,6 +8,7 @@
 ## X-Curse-Project-ID: 1444088
 
 utils/Tooltip.lua
+utils/AutoKeystone.lua
 modules/Databar/Core.lua
 modules/Databar/Slots/Guild.lua
 modules/Databar/Slots/Friends.lua

@@ -54,6 +54,10 @@ eventHandler:SetScript("OnEvent", function(self, event, addonName)
         if NuttUI.AutoRepair and NuttUI.AutoRepair.Init then
             NuttUI.AutoRepair:Init()
         end
+
+        if NuttUI.AutoKeystone and NuttUI.AutoKeystone.Init then
+            NuttUI.AutoKeystone:Init()
+        end
         
         self:UnregisterEvent("ADDON_LOADED")
     end
