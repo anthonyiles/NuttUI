@@ -1,0 +1,9 @@
+package-as: NuttUI
+
+ignore:
+  - .git
+  - .github
+  - .vscode
+  - .gitignore
+  - implementation_plan.md
+  - task.md
