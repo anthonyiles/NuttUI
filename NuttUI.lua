@@ -258,7 +258,24 @@ function NuttUI:CreateDatabarOptions(parentCategory)
 
     -- Bar Selector Dropdown
     local barSelector = CreateFrame("Frame", nil, frame, "UIDropDownMenuTemplate")
-    barSelector:SetPoint("TOPLEFT", title, "BOTTOMLEFT", -20, -10)
+    barSelector:SetPoint("TOPLEFT", title, "BOTTOMLEFT", -20, -35) -- Moved down slightly to fit Lock checkbox
+
+    -- Lock Checkbox
+    local lockCheckbox = CreateFrame("CheckButton", nil, frame, "UICheckButtonTemplate")
+    lockCheckbox:SetPoint("BOTTOMLEFT", barSelector, "TOPLEFT", 20, 0)
+    lockCheckbox.text = lockCheckbox:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    lockCheckbox.text:SetPoint("LEFT", lockCheckbox, "RIGHT", 5, 0)
+    lockCheckbox.text:SetText("Lock Bar")
+    
+    lockCheckbox:SetScript("OnClick", function(self)
+        local isLocked = self:GetChecked()
+        if NuttUIDB.Databars[selectedBarID] then
+            NuttUIDB.Databars[selectedBarID].Locked = isLocked
+            local barInstance = NuttUI.Databar:Create(selectedBarID)
+            -- Re-create/update to apply lock state
+            NuttUI.Databar:Create(selectedBarID) 
+        end
+    end)
     
     local function GetBarName(id)
         local cfg = NuttUIDB.Databars[id]
@@ -645,6 +662,9 @@ function NuttUI:CreateDatabarOptions(parentCategory)
             -- Name
             renameBox:SetText(config.Name or GetBarName(selectedBarID))
             
+            -- Lock State
+            lockCheckbox:SetChecked(config.Locked or false)
+
             -- Colour
             local r, g, b, a = unpack(config.BgColor or {0,0,0,0.6})
             swatch:SetColorTexture(r, g, b, a)

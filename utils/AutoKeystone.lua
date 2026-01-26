@@ -2,7 +2,7 @@ local _, NuttUI = ...
 NuttUI.AutoKeystone = {}
 
 local function OnKeystoneFrameShow()
-    NuttUI.AutoKeystone:TrySlotKeystone()
+    NuttUI.AutoKeystone:TryToSlotKeystone()
 end
 
 local function HookKeystoneFrame()
@@ -26,7 +26,7 @@ function NuttUI.AutoKeystone:Init()
     end
 end
 
-function NuttUI.AutoKeystone:TrySlotKeystone()
+function NuttUI.AutoKeystone:TryToSlotKeystone()
     if NuttUIDB and NuttUIDB.AutoKeystone == false then return end
     
     for bag = 0, NUM_BAG_SLOTS do

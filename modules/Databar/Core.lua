@@ -200,7 +200,11 @@ function NuttUI.Databar:Create(id)
     frame:EnableMouse(true)
     frame:RegisterForDrag("LeftButton")
     frame:SetClampedToScreen(true)
-    frame:SetScript("OnDragStart", frame.StartMoving)
+    frame:SetScript("OnDragStart", function(self)
+        if not NuttUIDB.Databars[self.id] or not NuttUIDB.Databars[self.id].Locked then
+            self:StartMoving()
+        end
+    end)
     frame:SetScript("OnDragStop", function(self)
         self:StopMovingOrSizing()
         local point, _, relativePoint, x, y = self:GetPoint()
