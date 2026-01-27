@@ -59,6 +59,10 @@ eventHandler:SetScript("OnEvent", function(self, event, addonName)
         if NuttUI.AutoKeystone and NuttUI.AutoKeystone.Init then
             NuttUI.AutoKeystone:Init()
         end
+
+        if NuttUI.Notes and NuttUI.Notes.Init then
+            NuttUI.Notes:Init()
+        end
         
         self:UnregisterEvent("ADDON_LOADED")
     end
@@ -250,9 +254,43 @@ function NuttUI:CreateOptions()
     )
     Settings.CreateCheckbox(category, settingAutoKeystone, "Automatically slot the correct keystone when opening the Font of Power.")
 
+    -- 3. Durability Header
+    layout:AddInitializer(CreateSettingsListSectionHeaderInitializer("Auto Repair"))
+
+    local function GetAutoRepair()
+        return GetValueOrDefault(NuttUIDB, "AutoRepair", "None")
+    end
+
+    local function SetAutoRepair(value)
+        if not NuttUIDB then NuttUIDB = {} end
+        NuttUIDB.AutoRepair = value
+    end
+    
+    local function GetAutoRepairOptions()
+        local container = Settings.CreateControlTextContainer()
+        container:Add("None", "None")
+        container:Add("Player", "Personal Gold")
+        container:Add("Guild", "Guild Gold")
+        return container:GetData()
+    end
+
+    local settingAutoRepair = Settings.RegisterProxySetting(
+        category,
+        "NuttUI_AutoRepair",
+        Settings.VarType.String,
+        "Auto Repair",
+        "None",
+        GetAutoRepair,
+        SetAutoRepair
+    )
+    Settings.CreateDropdown(category, settingAutoRepair, GetAutoRepairOptions, "Configure automatic repair preferences.")
+
+
+
     Settings.RegisterAddOnCategory(category)
     
     self:CreateDatabarOptions(category)
+    self:CreateNotesOptions(category)
 end
 
 function NuttUI:CreateDatabarOptions(parentCategory)
@@ -296,6 +334,7 @@ function NuttUI:CreateDatabarOptions(parentCategory)
     end)
     
     local function GetBarName(id)
+        if not id then return "None" end
         local cfg = NuttUIDB.Databars[id]
         if cfg and cfg.Name and cfg.Name ~= "" then
             return cfg.Name
@@ -305,51 +344,57 @@ function NuttUI:CreateDatabarOptions(parentCategory)
     
     local function UpdateBarDropdown()
         UIDropDownMenu_SetWidth(barSelector, 150)
-        UIDropDownMenu_SetText(barSelector, GetBarName(selectedBarID))
-        UIDropDownMenu_Initialize(barSelector, function(self, level)
-            local info = UIDropDownMenu_CreateInfo()
-            if NuttUIDB and NuttUIDB.Databars then
-                -- Sort keys for consistent order
-                local sortedKeys = {}
-                for k in pairs(NuttUIDB.Databars) do table.insert(sortedKeys, k) end
-                table.sort(sortedKeys)
-                
-                for _, k in ipairs(sortedKeys) do
-                    info.text = GetBarName(k)
-                    info.func = function() 
-                        selectedBarID = k
-                        UIDropDownMenu_SetText(barSelector, GetBarName(k))
-                        frame:Refresh()
-                    end
-                    info.checked = (selectedBarID == k)
-                    UIDropDownMenu_AddButton(info, level)
-                end
-            end
-            -- Add New Option
-            info.text = "|cff00ff00+ Create New Bar|r"
-            info.func = function()
-                local newID = 1
-                if NuttUIDB.Databars then
-                    local max = 0
-                    for k in pairs(NuttUIDB.Databars) do if k > max then max = k end end
-                    newID = max + 1
-                end
-                
-                NuttUIDB.Databars[newID] = {
-                    NumSlots = 3,
-                    Slots = {"Guild", "Friends", "LootSpec"},
-                    BgColor = {0, 0, 0, 0.6},
-                    Point = {"CENTER", nil, "CENTER", 0, - (newID * 30)}
-                }
-                NuttUI.Databar:Create(newID)
-                selectedBarID = newID
-                UIDropDownMenu_SetText(barSelector, GetBarName(newID))
-                frame:Refresh()
-            end
-            info.checked = false
-            UIDropDownMenu_AddButton(info, level)
-        end)
+        local text = "No Bars Created"
+        if selectedBarID then
+            text = GetBarName(selectedBarID)
+        end
+        UIDropDownMenu_SetText(barSelector, text)
     end
+    
+    UIDropDownMenu_SetWidth(barSelector, 150)
+    UIDropDownMenu_Initialize(barSelector, function(self, level)
+        local info = UIDropDownMenu_CreateInfo()
+        if NuttUIDB and NuttUIDB.Databars then
+            -- Sort keys for consistent order
+            local sortedKeys = {}
+            for k in pairs(NuttUIDB.Databars) do table.insert(sortedKeys, k) end
+            table.sort(sortedKeys)
+            
+            for _, k in ipairs(sortedKeys) do
+                info.text = GetBarName(k)
+                info.func = function() 
+                    selectedBarID = k
+                    UIDropDownMenu_SetText(barSelector, GetBarName(k))
+                    frame:Refresh()
+                end
+                info.checked = (selectedBarID == k)
+                UIDropDownMenu_AddButton(info, level)
+            end
+        end
+        -- Add New Option
+        info.text = "|cff00ff00+ Create New Bar|r"
+        info.func = function()
+            local newID = 1
+            if NuttUIDB.Databars then
+                local max = 0
+                for k in pairs(NuttUIDB.Databars) do if k > max then max = k end end
+                newID = max + 1
+            end
+            
+            NuttUIDB.Databars[newID] = {
+                NumSlots = 3,
+                Slots = {"Guild", "Friends", "LootSpec"},
+                BgColor = {0, 0, 0, 0.6},
+                Point = {"CENTER", nil, "CENTER", 0, - (newID * 30)}
+            }
+            NuttUI.Databar:Create(newID)
+            selectedBarID = newID
+            UIDropDownMenu_SetText(barSelector, GetBarName(newID))
+            frame:Refresh()
+        end
+        info.checked = false
+        UIDropDownMenu_AddButton(info, level)
+    end)
     
     -- Rename Bar EditBox
     local renameBox = CreateFrame("EditBox", nil, frame, "InputBoxTemplate")
@@ -384,45 +429,21 @@ function NuttUI:CreateDatabarOptions(parentCategory)
     deleteBtn.confirming = false
     
     deleteBtn:SetScript("OnClick", function(self)
-        if not self.confirming then
-            self.confirming = true
-            self:SetText("|cffff0000Confirm?|r")
-            C_Timer.After(3, function()
-                if self.confirming then
-                    self.confirming = false
-                    self:SetText("Delete Bar")
-                end
-            end)
-        else
-            if selectedBarID then
-                local count = 0
-                for _ in pairs(NuttUIDB.Databars) do count = count + 1 end
-                if count <= 1 then
-                    print("NuttUI: Cannot delete the last Databar.")
-                    self.confirming = false
-                    self:SetText("Delete Bar")
-                    return 
-                end
-                
-                NuttUI.Databar:Delete(selectedBarID)
-                
-                selectedBarID = next(NuttUIDB.Databars)
-                frame:Refresh()
-                
-                self.confirming = false
-                self:SetText("Delete Bar")
+        if selectedBarID then
+            local dialog = StaticPopup_Show("NUTTUI_DELETE_DATABAR")
+            if dialog then
+                dialog.data = {
+                    id = selectedBarID,
+                    onSuccess = function()
+                        selectedBarID = next(NuttUIDB.Databars)
+                        frame:Refresh()
+                    end
+                }
             end
         end
     end)
     
-    local oldRefresh = frame.Refresh
-    frame.Refresh = function(self)
-        if deleteBtn.confirming then
-            deleteBtn.confirming = false
-            deleteBtn:SetText("Delete Bar")
-        end
-        oldRefresh(self)
-    end
+
     
     -- Settings Container
     local settingsContainer = CreateFrame("Frame", nil, frame)
@@ -670,13 +691,28 @@ function NuttUI:CreateDatabarOptions(parentCategory)
     
     function frame:Refresh()
         -- Ensure valid ID again just in case
-        if not NuttUIDB.Databars[selectedBarID] then
-             selectedBarID = next(NuttUIDB.Databars) or 1
+        if selectedBarID and not NuttUIDB.Databars[selectedBarID] then
+             selectedBarID = next(NuttUIDB.Databars)
         end
+        if not selectedBarID and NuttUIDB.Databars then
+             selectedBarID = next(NuttUIDB.Databars)
+        end
+        
         UpdateBarDropdown()
         
-        local config = NuttUIDB.Databars[selectedBarID]
+        local config = nil
+        if selectedBarID then
+            config = NuttUIDB.Databars[selectedBarID]
+        end
+        
         if config then
+            settingsContainer:Show()
+            renameBox:Show()
+            renameBtn:Show()
+            deleteBtn:Show()
+            lockCheckbox:Show()
+            renameLabel:Show()
+            
             -- Name
             renameBox:SetText(config.Name or GetBarName(selectedBarID))
             
@@ -694,6 +730,13 @@ function NuttUI:CreateDatabarOptions(parentCategory)
             
             -- Slot Rows
             self:RefreshSlots()
+        else
+            settingsContainer:Hide()
+            renameBox:Hide()
+            renameBtn:Hide()
+            deleteBtn:Hide()
+            lockCheckbox:Hide()
+            renameLabel:Hide()
         end
     end
 
@@ -701,6 +744,176 @@ function NuttUI:CreateDatabarOptions(parentCategory)
         frame:Refresh()
     end)
 
+end
+
+function NuttUI:CreateNotesOptions(parentCategory)
+    local frame = CreateFrame("Frame", nil, nil)
+    frame.name = "Notes"
+    
+    local subcategory = Settings.RegisterCanvasLayoutSubcategory(parentCategory, frame, "Notes")
+    
+    -- Title
+    local title = frame:CreateFontString(nil, "ARTWORK", "GameFontNormalLarge")
+    title:SetPoint("TOPLEFT", 16, -16)
+    title:SetText("Floating Notes")
+    
+    -- Description
+    local desc = frame:CreateFontString(nil, "ARTWORK", "GameFontHighlight")
+    desc:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 0, -10)
+    desc:SetText("Create and manage sticky notes on your screen.")
+    
+    -- Create Button
+    local createBtn = CreateFrame("Button", nil, frame, "UIPanelButtonTemplate")
+    createBtn:SetSize(150, 30)
+    createBtn:SetPoint("TOPLEFT", desc, "BOTTOMLEFT", 0, -20)
+    createBtn:SetText("Create New Note")
+    
+    -- Reset All Button
+    local resetBtn = CreateFrame("Button", nil, frame, "UIPanelButtonTemplate")
+    resetBtn:SetSize(150, 30)
+    resetBtn:SetPoint("LEFT", createBtn, "RIGHT", 10, 0)
+    resetBtn:SetText("Delete All Notes")
+    
+    -- List Container
+    local listContainer = CreateFrame("Frame", nil, frame, "BackdropTemplate")
+    listContainer:SetPoint("TOPLEFT", createBtn, "BOTTOMLEFT", 0, -20)
+    listContainer:SetSize(600, 400)
+    listContainer:SetBackdrop({
+        edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+        edgeSize = 16,
+    })
+    
+    local scrollFrame = CreateFrame("ScrollFrame", nil, listContainer, "UIPanelScrollFrameTemplate")
+    scrollFrame:SetPoint("TOPLEFT", 5, -5)
+    scrollFrame:SetPoint("BOTTOMRIGHT", -26, 5)
+    
+    local content = CreateFrame("Frame", nil, scrollFrame)
+    content:SetSize(570, 1) -- Height updated dynamically
+    scrollFrame:SetScrollChild(content)
+    
+    frame.noteRows = {}
+    
+    local function RefreshList()
+        -- Hide existing rows
+        for _, row in ipairs(frame.noteRows) do row:Hide() end
+        
+        if not NuttUIDB or not NuttUIDB.Notes then return end
+        
+        local sortedIDs = {}
+        for id in pairs(NuttUIDB.Notes) do table.insert(sortedIDs, id) end
+        table.sort(sortedIDs)
+        
+        local yOffset = 0
+        for i, id in ipairs(sortedIDs) do
+            local cfg = NuttUIDB.Notes[id]
+            if cfg then
+                local row = frame.noteRows[i]
+                if not row then
+                    row = CreateFrame("Frame", nil, content)
+                    row:SetSize(570, 30)
+                    
+                    -- Note Name
+                    row.name = row:CreateFontString(nil, "ARTWORK", "GameFontNormal")
+                    row.name:SetPoint("LEFT", 10, 0)
+                    row.name:SetWidth(180)
+                    row.name:SetJustifyH("LEFT")
+                    
+                    -- Delete Button (Right)
+                    row.delBtn = CreateFrame("Button", nil, row, "UIPanelButtonTemplate")
+                    row.delBtn:SetSize(80, 22)
+                    row.delBtn:SetPoint("RIGHT", -10, 0)
+                    row.delBtn:SetText("Delete")
+                    
+                    -- Locked Checkbox
+                    row.lockBtn = CreateFrame("CheckButton", nil, row, "UICheckButtonTemplate")
+                    row.lockBtn:SetSize(24, 24)
+                    row.lockBtn:SetPoint("RIGHT", row.delBtn, "LEFT", -20, 0)
+                    row.lockBtn.text = row.lockBtn:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+                    row.lockBtn.text:SetPoint("RIGHT", row.lockBtn, "LEFT", -5, 0)
+                    row.lockBtn.text:SetText("Locked")
+                    
+                    -- Show/Hide Checkbox
+                    row.showBtn = CreateFrame("CheckButton", nil, row, "UICheckButtonTemplate")
+                    row.showBtn:SetSize(24, 24)
+                    row.showBtn:SetPoint("RIGHT", row.lockBtn, "LEFT", -60, 0) -- Gap
+                    row.showBtn.text = row.showBtn:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+                    row.showBtn.text:SetPoint("RIGHT", row.showBtn, "LEFT", -5, 0)
+                    row.showBtn.text:SetText("Visible")
+                    
+                    frame.noteRows[i] = row
+                end
+                
+                row:ClearAllPoints()
+                row:SetPoint("TOPLEFT", 0, -yOffset)
+                row:Show()
+                
+                -- Populate Data
+                local title = "Note " .. id
+                if cfg.text and cfg.text ~= "" then
+                    -- Extract first line
+                    local firstLine = cfg.text:match("^[^\n]*")
+                    if firstLine and #firstLine > 0 then
+                        title = firstLine:sub(1, 25)
+                        if #firstLine > 25 then title = title .. "..." end
+                    end
+                end
+                row.name:SetText(title)
+                
+                -- Logic
+                row.showBtn:SetChecked(not cfg.hidden)
+                row.showBtn:SetScript("OnClick", function(self)
+                    local visible = self:GetChecked()
+                    -- Use Centralized Method
+                    NuttUI.Notes:SetHidden(id, not visible)
+                end)
+                
+                row.lockBtn:SetChecked(cfg.locked)
+                row.lockBtn:SetScript("OnClick", function(self)
+                    local locked = self:GetChecked()
+                    -- Use Centralized Method
+                    NuttUI.Notes:SetLock(id, locked)
+                end)
+                
+                row.delBtn:SetScript("OnClick", function()
+                    local dialog = StaticPopup_Show("NUTTUI_DELETE_NOTE")
+                    if dialog then
+                        dialog.data = id
+                        -- Hook OnAccept to refresh list
+                        local orig = dialog.OnAccept
+                        dialog.OnAccept = function(self)
+                            if self.data then
+                                NuttUI.Notes:Delete(self.data)
+                                -- RefreshList will be triggered by Delete callback
+                            end
+                        end
+                    end
+                end)
+                
+                yOffset = yOffset + 30
+            end
+        end
+        content:SetHeight(yOffset)
+    end
+    
+    -- Register Callback
+    NuttUI.Notes.UpdateCallback = function()
+        if frame:IsVisible() then
+            RefreshList()
+        end
+    end
+    
+    createBtn:SetScript("OnClick", function()
+        if NuttUI.Notes then
+            NuttUI.Notes:New()
+            -- RefreshList triggered by callback
+        end
+    end)
+    
+    resetBtn:SetScript("OnClick", function()
+        StaticPopup_Show("NUTTUI_DELETE_ALL_NOTES")
+    end)
+    
+    frame:SetScript("OnShow", RefreshList)
 end
 
 -- Initialise Options immediately
@@ -712,5 +925,12 @@ NuttUI:CreateOptions()
 
 SLASH_NUTTUI1 = "/nui"
 SlashCmdList["NUTTUI"] = function(msg)
-    Settings.OpenToCategory(category:GetID())
+    local cmd, arg1 = string.split(" ", msg)
+    if cmd == "note" then
+        if NuttUI.Notes then
+            NuttUI.Notes:New()
+        end
+    else
+        Settings.OpenToCategory(category:GetID())
+    end
 end
