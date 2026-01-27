@@ -383,7 +383,7 @@ function NuttUI:CreateDatabarOptions(parentCategory)
             
             NuttUIDB.Databars[newID] = {
                 NumSlots = 3,
-                Slots = {"Guild", "Friends", "LootSpec"},
+                Slots = {"Guild", "Friends", "Spec"},
                 BgColor = {0, 0, 0, 0.6},
                 Point = {"CENTER", nil, "CENTER", 0, - (newID * 30)}
             }
