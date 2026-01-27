@@ -12,6 +12,15 @@ utils/AutoKeystone.lua
 modules/Databar/Core.lua
 modules/Databar/Slots/Guild.lua
 modules/Databar/Slots/Friends.lua
-modules/Databar/Slots/LootSpec.lua
 modules/Databar/Slots/Durability.lua
+modules/Databar/Slots/Coordinates.lua
+modules/Databar/Slots/Currencies.lua
+modules/Databar/Slots/FPS.lua
+modules/Databar/Slots/Latency.lua
+modules/Databar/Slots/MythicKey.lua
+modules/Databar/Slots/Spec.lua
+modules/Databar/Slots/System.lua
+modules/Databar/Slots/Time.lua
+modules/Databar/Slots/Volume.lua
+modules/Notes/Notes.lua
 NuttUI.lua

@@ -36,7 +36,7 @@ eventHandler:SetScript("OnEvent", function(self, event, addonName)
             NuttUIDB.Databars = {
                 [1] = {
                     NumSlots = 3,
-                    Slots = {"Guild", "Friends", "LootSpec", "Durability"},
+                    Slots = {"Guild", "Friends", "Spec", "Durability"},
                     BgColor = {0, 0, 0, 0.6},
                     Point = {"CENTER", nil, "CENTER", 0, 0}
                 }
@@ -63,6 +63,24 @@ eventHandler:SetScript("OnEvent", function(self, event, addonName)
         self:UnregisterEvent("ADDON_LOADED")
     end
 end)
+
+StaticPopupDialogs["NUTTUI_DELETE_DATABAR"] = {
+  text = "Are you sure you want to delete this Databar?",
+  button1 = "Yes",
+  button2 = "No",
+  OnAccept = function(self)
+      if self.data and self.data.id then
+          NuttUI.Databar:Delete(self.data.id)
+          if self.data.onSuccess then
+              self.data.onSuccess()
+          end
+      end
+  end,
+  timeout = 0,
+  whileDead = true,
+  hideOnEscape = true,
+  preferredIndex = 3,
+}
 
 --------------------------------------------------------------------------------
 -- Options Menu (Settings API)
