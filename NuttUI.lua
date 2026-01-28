@@ -13,6 +13,7 @@ local defaults = {
     PinOffsetX = 0,
     PinOffsetY = 0,
     AutoKeystone = true,
+    AutoRepairFallback = true,
 }
 
 --------------------------------------------------------------------------------
@@ -284,6 +285,27 @@ function NuttUI:CreateOptions()
         SetAutoRepair
     )
     Settings.CreateDropdown(category, settingAutoRepair, GetAutoRepairOptions, "Configure automatic repair preferences.")
+
+    -- Auto Repair Fallback Checkbox
+    local function GetAutoRepairFallback()
+        return GetValueOrDefault(NuttUIDB, "AutoRepairFallback", defaults.AutoRepairFallback)
+    end
+    
+    local function SetAutoRepairFallback(value)
+        if not NuttUIDB then NuttUIDB = {} end
+        NuttUIDB.AutoRepairFallback = value
+    end
+
+    local settingFallback = Settings.RegisterProxySetting(
+        category,
+        "NuttUI_AutoRepairFallback",
+        Settings.VarType.Boolean,
+        "Use local gold fallback",
+        defaults.AutoRepairFallback,
+        GetAutoRepairFallback,
+        SetAutoRepairFallback
+    )
+    Settings.CreateCheckbox(category, settingFallback, "Use personal gold if guild repair fails.")
 
 
 
