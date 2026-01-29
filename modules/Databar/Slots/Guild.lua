@@ -12,7 +12,7 @@ NuttUI.Databar:RegisterSlot({
             local _, _, _, _, _, _, _, _, isOnline = GetGuildRosterInfo(i)
             if isOnline then online = online + 1 end
         end
-        return string.format("|cffffffff%s:|r |cff00ff00%d|r", label or "Guild", online)
+        return string.format("|cffffffff%s:|r %s%d|r", label or "Guild", NuttUI:GetDatabarColor("|cff00ff00"), online)
     end,
     OnEnter = function(self)
         if not IsInGuild() then 

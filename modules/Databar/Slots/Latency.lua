@@ -9,7 +9,7 @@ NuttUI.Databar:RegisterSlot({
         local color = "00ff00"
         if latency > 300 then color = "ff0000"
         elseif latency > 150 then color = "ffff00" end
-        return string.format("|cffffffff%s:|r |cff%s%dms|r", label or "MS", color, latency)
+        return string.format("|cffffffff%s:|r %s%dms|r", label or "MS", NuttUI:GetDatabarColor("|cff" .. color), latency)
     end,
     OnEnter = function(self)
         local _, _, latencyHome, latencyWorld = GetNetStats()

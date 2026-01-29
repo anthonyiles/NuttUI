@@ -14,7 +14,19 @@ local defaults = {
     PinOffsetY = 0,
     AutoKeystone = true,
     AutoRepairFallback = true,
+    ClassColorDatabars = false,
 }
+
+function NuttUI:GetDatabarColor(defaultHex)
+    if NuttUIDB and NuttUIDB.ClassColorDatabars then
+        local _, classFileName = UnitClass("player")
+        local color = C_ClassColor.GetClassColor(classFileName)
+        if color then
+            return color:GenerateHexColorMarkup()
+        end
+    end
+    return defaultHex or "|cffffffff"
+end
 
 --------------------------------------------------------------------------------
 -- Initialisation
@@ -336,7 +348,22 @@ function NuttUI:CreateDatabarOptions(parentCategory)
 
     -- Bar Selector Dropdown
     local barSelector = CreateFrame("Frame", nil, frame, "UIDropDownMenuTemplate")
-    barSelector:SetPoint("TOPLEFT", title, "BOTTOMLEFT", -20, -35) -- Moved down slightly to fit Lock checkbox
+    barSelector:SetPoint("TOPLEFT", title, "BOTTOMLEFT", -20, -50) -- Moved down slightly to fit Lock checkbox
+
+    -- Class Colour Checkbox
+    local classColorCheckbox = CreateFrame("CheckButton", nil, frame, "UICheckButtonTemplate")
+    classColorCheckbox:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 165, -18)
+    classColorCheckbox.text = classColorCheckbox:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    classColorCheckbox.text:SetPoint("LEFT", classColorCheckbox, "RIGHT", 5, 0)
+    classColorCheckbox.text:SetText("Class colour for text")
+    
+    classColorCheckbox:SetScript("OnShow", function(self)
+        self:SetChecked(NuttUIDB.ClassColorDatabars)
+    end)
+    
+    classColorCheckbox:SetScript("OnClick", function(self)
+        NuttUIDB.ClassColorDatabars = self:GetChecked()
+    end)
 
     -- Lock Checkbox
     local lockCheckbox = CreateFrame("CheckButton", nil, frame, "UICheckButtonTemplate")

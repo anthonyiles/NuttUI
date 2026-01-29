@@ -20,7 +20,7 @@ NuttUI.Databar:RegisterSlot({
             text = string.format("%dmb", total)
         end
         
-        return string.format("|cffffffff%s:|r |cff00ff00%s|r", label or "Mem", text)
+        return string.format("|cffffffff%s:|r %s%s|r", label or "Mem", NuttUI:GetDatabarColor("|cff00ff00"), text)
     end,
     OnEnter = function(self)
         UpdateAddOnMemoryUsage()
