@@ -9,6 +9,7 @@
 
 utils/Tooltip.lua
 utils/AutoKeystone.lua
+utils/AutoRepair.lua
 modules/Databar/Core.lua
 modules/Databar/Slots/Guild.lua
 modules/Databar/Slots/Friends.lua
