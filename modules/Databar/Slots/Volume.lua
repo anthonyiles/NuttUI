@@ -9,7 +9,7 @@ NuttUI.Databar:RegisterSlot({
         local percent = math.floor(vol * 100)
         local color = "ffffff"
         if percent == 0 then color = "999999" end
-        return string.format("|cffffffff%s:|r |cff%s%d%%|r", label or "Vol", color, percent)
+        return string.format("|cffffffff%s:|r %s%d%%|r", label or "Vol", NuttUI:GetDatabarColor("|cff" .. color), percent)
     end,
     OnEnter = function(self)
         GameTooltip:AddLine("Master Volume")

@@ -312,7 +312,7 @@ function NuttUI:CreateOptions()
         category,
         "NuttUI_AutoRepairFallback",
         Settings.VarType.Boolean,
-        "Use local gold fallback",
+        "Use personal gold if guild repair fails",
         defaults.AutoRepairFallback,
         GetAutoRepairFallback,
         SetAutoRepairFallback

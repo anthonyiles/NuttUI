@@ -242,74 +242,110 @@ function NuttUI.Notes:Create(id, config)
         ColorPickerFrame:SetupColorPickerAndShow(info)
     end)
     
-    -- Close Button (Right)
-    local closeBtn = CreateFrame("Button", nil, header, "UIPanelCloseButton")
-    closeBtn:SetSize(16, 16)
-    closeBtn:SetPoint("RIGHT", 0, 0)
+    -- Menu Button (Top Right)
+    local menuBtn = CreateFrame("Button", nil, header)
+    menuBtn:SetSize(20, 20)
+    menuBtn:SetPoint("RIGHT", 0, 0)
     
-    closeBtn:SetScript("OnClick", function()
-        local dialog = StaticPopup_Show("NUTTUI_DELETE_NOTE")
-        if dialog then
-            dialog.data = frame.id
-        end
-    end)
+    local menuIcon = menuBtn:CreateTexture(nil, "ARTWORK")
+    menuIcon:SetSize(16, 16)
+    menuIcon:SetPoint("CENTER")
+    menuIcon:SetTexture("Interface\\ChatFrame\\UI-ChatIcon-ScrollDown-Up")
+    menuBtn:SetNormalTexture(menuIcon)
+    
+    local menuIconH = menuBtn:CreateTexture(nil, "ARTWORK")
+    menuIconH:SetSize(16, 16)
+    menuIconH:SetPoint("CENTER")
+    menuIconH:SetTexture("Interface\\ChatFrame\\UI-ChatIcon-ScrollDown-Down")
+    menuBtn:SetHighlightTexture(menuIconH)
+    
+    -- Menu Frame for Dropdown
+    if not frame.menuFrame then
+        frame.menuFrame = CreateFrame("Frame", "NuttUINoteMenu_"..id, frame, "UIDropDownMenuTemplate")
+    end
 
-    -- Lock Checkbox (Left of Close Button)
-    local lockBtn = CreateFrame("CheckButton", nil, header, "UICheckButtonTemplate")
-    lockBtn:SetSize(16, 16)
-    lockBtn:SetPoint("RIGHT", closeBtn, "LEFT", -5, 0)
-    lockBtn:SetHitRectInsets(0, 0, 0, 0)
-    lockBtn:SetChecked(config.locked)
-    frame.lockBtn = lockBtn
+    menuBtn:SetScript("OnClick", function(self)
+        MenuUtil.CreateContextMenu(self, function(owner, rootDescription)
+            rootDescription:CreateTitle("Options")
+            
+            -- Lock Note (Checkbox)
+            rootDescription:CreateCheckbox(
+                "Lock",
+                function() return NuttUIDB.Notes[frame.id].locked end,
+                function()
+                    local wasLocked = NuttUIDB.Notes[frame.id].locked
+                    NuttUI.Notes:SetLock(frame.id, not wasLocked)
+                end
+            )
+            
+            -- Hide Note (Button)
+            rootDescription:CreateButton(
+                "Hide",
+                function()
+                    local dialog = StaticPopup_Show("NUTTUI_HIDE_NOTE")
+                    if dialog then dialog.data = frame.id end
+                end
+            )
+            
+            -- Delete Note (Button)
+            rootDescription:CreateButton(
+                "Delete",
+                function()
+                    local dialog = StaticPopup_Show("NUTTUI_DELETE_NOTE")
+                    if dialog then dialog.data = frame.id end
+                end
+            )
+        end)
+    end)
     
-    -- Padlock Icon (Left of Checkbox)
-    local lockIcon = header:CreateTexture(nil, "ARTWORK")
-    lockIcon:SetSize(12, 12)
-    lockIcon:SetPoint("RIGHT", lockBtn, "LEFT", 0, 0)
-    lockIcon:SetTexture("Interface\\LFGFrame\\UI-LFG-Icon-Lock")
-    
+    frame.menuBtn = menuBtn
+
     local function UpdateVisuals(locked)
         local cfg = NuttUIDB.Notes[frame.id]
+
+        -- Toggle Controls
         if locked then
-            -- Use saved color but slightly dimmer or just rely on opacity
-            frame:SetBackdropColor((cfg.r or 0), (cfg.g or 0), (cfg.b or 0), (cfg.a or 0.2)) 
-            frame:SetBackdropBorderColor(0.4, 0.4, 0.4, 0.8)
             resizeBtn:Hide()
+            bgColorBtn:Hide()
+            textColorBtn:Hide()
+            
+            -- Lock EditBox
+            if frame.editBox then
+                frame.editBox:EnableMouse(false)
+                frame.editBox:ClearFocus()
+            end
+            
+            frame:SetBackdropColor((cfg.r or 0), (cfg.g or 0), (cfg.b or 0), (cfg.a or 0.2)) 
+            frame:SetBackdropBorderColor(0.4, 0.4, 0.4, 0.5) -- Dimmer border
+            
+            -- Dim ScrollBar
+            if frame.scrollFrame and frame.scrollFrame.ScrollBar then
+                 frame.scrollFrame.ScrollBar:SetAlpha(0.5)
+            end
         else
+            resizeBtn:Show()
+            bgColorBtn:Show()
+            textColorBtn:Show()
+            
+            -- Unlock EditBox
+            if frame.editBox then
+                frame.editBox:EnableMouse(true)
+            end
+            
             frame:SetBackdropColor((cfg.r or 0), (cfg.g or 0), (cfg.b or 0), (cfg.a or 0.2))
             frame:SetBackdropBorderColor(0.6, 0.6, 0.6, 1)
-            resizeBtn:Show()
+            
+            -- Restore ScrollBar
+            if frame.scrollFrame and frame.scrollFrame.ScrollBar then
+                 frame.scrollFrame.ScrollBar:SetAlpha(1.0)
+            end
         end
     end
 
-    lockBtn:SetScript("OnClick", function(self)
-        local isLocked = self:GetChecked()
-        -- Use centralized SetLock to ensure sync
-        NuttUI.Notes:SetLock(frame.id, isLocked)
-    end)
-    
-    -- Hide Button (Left of Lock Controls)
-    local hideBtn = CreateFrame("Button", nil, header, "UIPanelButtonTemplate")
-    hideBtn:SetSize(20, 16)
-    hideBtn:SetPoint("RIGHT", lockBtn, "LEFT", -5, 0)
-    hideBtn:SetText("-")
-    
-    hideBtn:SetScript("OnClick", function()
-        local dialog = StaticPopup_Show("NUTTUI_HIDE_NOTE")
-        if dialog then
-            dialog.data = frame.id
-        end
-    end)
-
-    -- Initial lock state visual update
-    -- Logic moved to SetLock call below if needed or just handled by UpdateVisuals
-    -- The internal UpdateVisuals inside Create is closure-bound, so SetLock needs to access it or duplicate it.
-    -- Better: Store UpdateVisuals on the frame.
+    -- Store UpdateVisuals on the frame.
     frame.UpdateVisuals = UpdateVisuals
     
-    if config.locked then
-        UpdateVisuals(true)
-    end
+
     
     if config.hidden then
         frame:Hide()
@@ -317,6 +353,7 @@ function NuttUI.Notes:Create(id, config)
     
     -- Content EditBox
     local scrollFrame = CreateFrame("ScrollFrame", nil, frame, "UIPanelScrollFrameTemplate")
+    frame.scrollFrame = scrollFrame -- Expose for UpdateVisuals
     scrollFrame:SetPoint("TOPLEFT", header, "BOTTOMLEFT", 4, -2)
     scrollFrame:SetPoint("BOTTOMRIGHT", -26, 8) -- Leave room for resize grip
     
@@ -344,6 +381,15 @@ function NuttUI.Notes:Create(id, config)
     
     self.Instances[id] = frame
     
+    frame:SetScript("OnSizeChanged", function(self, w, h)
+        editBox:SetWidth(scrollFrame:GetWidth())
+    end)
+    
+    -- Initial Lock State
+    if config.locked then
+        UpdateVisuals(true)
+    end
+    
     -- Trigger Callback (New/Update)
     if self.UpdateCallback then self.UpdateCallback() end
     
@@ -360,7 +406,7 @@ function NuttUI.Notes:SetLock(id, state)
         -- Access internal button? Need to expose it or find by name/child.
         -- Finding by structure is fragile. Let's expose it in Create.
         -- Exposing via frame.lockBtn
-        if frame.lockBtn then frame.lockBtn:SetChecked(state) end
+
         
         -- Update Visuals
         if frame.UpdateVisuals then frame.UpdateVisuals(state) end
