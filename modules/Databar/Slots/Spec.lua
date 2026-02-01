@@ -11,7 +11,7 @@ NuttUI.Databar:RegisterSlot({
         local id, name = GetSpecializationInfo(specIndex)
         if not name then return string.format("|cffffffff%s:|r N/A", label or "Spec") end
         
-        return string.format("|cffffffff%s:|r |cff00ff00%s|r", label or "Spec", name)
+        return string.format("|cffffffff%s:|r %s%s|r", label or "Spec", NuttUI:GetDatabarColor("|cff00ff00"), name)
     end,
     OnEnter = function(self)
         local specIndex = GetSpecialization()

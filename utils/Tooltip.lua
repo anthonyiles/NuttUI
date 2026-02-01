@@ -1,6 +1,3 @@
--- NuttUI: Tooltip Utils
--- Author: Anthony
-
 local _, NuttUI = ...
 NuttUI.Tooltip = {}
 
@@ -18,12 +15,12 @@ local function HideStatusBar(tooltip)
 
     if statusBar then
         statusBar:Hide()
-        
+
         if not statusBar.isNuttUIHooked then
             statusBar:HookScript("OnShow", function(self)
                 if NuttUIDB and NuttUIDB.HideHealthbar then
                     self:Hide()
-                end 
+                end
             end)
             statusBar.isNuttUIHooked = true
         end
@@ -52,17 +49,14 @@ local function MoveTooltipToCursor(tooltip)
 end
 
 local function UpdateAnchor(tooltip, parent)
-    -- If option is disabled, do nothing (let default behavior happen)
-    if not NuttUIDB or not NuttUIDB.PinToCursor then 
+    if not NuttUIDB or not NuttUIDB.PinToCursor then
         tooltip.isNuttUIPinned = false
-        return 
+        return
     end
 
-    -- Toggle flag so OnUpdate knows to work
     tooltip.isNuttUIPinned = true
-
-    -- "ANCHOR_NONE" gives us full control
     tooltip:SetOwner(parent or UIParent, "ANCHOR_NONE")
+    MoveTooltipToCursor(tooltip)
 end
 
 -- -----------------------------------------------------------------------------
@@ -81,7 +75,7 @@ function NuttUI.Tooltip.Init()
     hooksecurefunc("GameTooltip_SetDefaultAnchor", function(tooltip, parent)
         UpdateAnchor(tooltip, parent)
     end)
-    
+
     -- Continuous movement
     GameTooltip:HookScript("OnShow", function(self)
         if self.isNuttUIPinned then
@@ -94,7 +88,7 @@ function NuttUI.Tooltip.Init()
             MoveTooltipToCursor(self)
         end
     end)
-    
+
     -- Cleanup flag
     GameTooltip:HookScript("OnHide", function(self)
         self.isNuttUIPinned = false

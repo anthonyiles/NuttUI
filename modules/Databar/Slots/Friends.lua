@@ -19,7 +19,7 @@ NuttUI.Databar:RegisterSlot({
             end
         end
         
-        return string.format("|cffffffff%s:|r |cff00ff00%d|r", label or "Friends", (onlineFriends + wowBNetOnline))
+        return string.format("|cffffffff%s:|r %s%d|r", label or "Friends", NuttUI:GetDatabarColor("|cff00ff00"), (onlineFriends + wowBNetOnline))
     end,
     OnEnter = function(self)
         local onlineFriends = C_FriendList.GetNumOnlineFriends() or 0

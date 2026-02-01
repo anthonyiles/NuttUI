@@ -89,6 +89,16 @@ function NuttUI.Databar:UpdateLayout(bar)
                         -- Width handling depends on layout mode
                         if not fixedWidth then
                             self:SetWidth(self.text:GetStringWidth() + 10)
+
+                            -- Recalculate parent width
+                            local padding = 10
+                            local newTotal = padding
+                            if activeSlotFrames then
+                                for _, f in ipairs(activeSlotFrames) do
+                                    newTotal = newTotal + f:GetWidth() + padding
+                                end
+                            end
+                            bar:SetWidth(newTotal)
                         end
                     end
                 end

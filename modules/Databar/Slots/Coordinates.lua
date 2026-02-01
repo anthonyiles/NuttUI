@@ -11,7 +11,7 @@ NuttUI.Databar:RegisterSlot({
         local pos = C_Map.GetPlayerMapPosition(mapID, "player")
         if not pos then return string.format("|cffffffff%s:|r n/a", label or "Coords") end
         
-        return string.format("|cffffffff%s:|r |cff00ff00%.0f, %.0f|r", label or "Coords", pos.x * 100, pos.y * 100)
+        return string.format("|cffffffff%s:|r %s%.0f, %.0f|r", label or "Coords", NuttUI:GetDatabarColor("|cff00ff00"), pos.x * 100, pos.y * 100)
     end,
     OnEnter = function(self)
         GameTooltip:AddLine("Coordinates")

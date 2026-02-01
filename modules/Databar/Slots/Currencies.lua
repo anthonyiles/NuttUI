@@ -28,13 +28,13 @@ NuttUI.Databar:RegisterSlot({
             for _, info in ipairs(watched) do
                 local iconStr = string.format("|T%s:12:12:2:0|t", info.iconFileID)
                 local amount = BreakUpLargeNumbers(info.quantity)
-                text = text .. string.format("%s  %s ", iconStr, amount)
+                text = text .. string.format("%s %s%s|r ", iconStr, NuttUI:GetDatabarColor("|cffffffff"), amount)
             end
+            return strtrim(text)
         else
             text = label or "Currencies"
+            return string.format("|cffffffff%s|r", strtrim(text))
         end
-        
-        return string.format("|cffffffff%s|r", strtrim(text))
     end,
     OnEnter = function(self)
         GameTooltip:AddLine("Watched Currencies")

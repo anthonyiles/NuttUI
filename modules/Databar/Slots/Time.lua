@@ -16,7 +16,7 @@ NuttUI.Databar:RegisterSlot({
             hour, minute = GetGameTime()
         end
         
-        return string.format("|cffffffff%s:|r |cff00ff00%02d:%02d|r |cff888888(%s)|r", label or "Time", hour, minute, typeStr)
+        return string.format("|cffffffff%s:|r %s%02d:%02d|r |cff888888(%s)|r", label or "Time", NuttUI:GetDatabarColor("|cff00ff00"), hour, minute, typeStr)
     end,
     OnEnter = function(self)
         GameTooltip:AddLine("Time")

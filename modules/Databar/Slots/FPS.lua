@@ -8,7 +8,7 @@ NuttUI.Databar:RegisterSlot({
         local color = "00ff00"
         if fps < 30 then color = "ff0000"
         elseif fps < 60 then color = "ffff00" end
-        return string.format("|cffffffff%s:|r |cff%s%d|r", label or "FPS", color, math.floor(fps))
+        return string.format("|cffffffff%s:|r %s%d|r", label or "FPS", NuttUI:GetDatabarColor("|cff" .. color), math.floor(fps))
     end,
     OnEnter = function(self)
         GameTooltip:AddLine("Frames Per Second")

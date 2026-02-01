@@ -18,7 +18,7 @@ NuttUI.Databar:RegisterSlot({
         if low < 20 then color = "ff0000"
         elseif low < 50 then color = "ffff00" end
         
-        return string.format("|cffffffff%s|r |cff%s%d%%|r", label or "Dur", color, low)
+        return string.format("|cffffffff%s|r %s%d%%|r", label or "Dur", NuttUI:GetDatabarColor("|cff" .. color), low)
     end,
     OnEnter = function(self)
         GameTooltip:AddLine("Durability Breakdown")
