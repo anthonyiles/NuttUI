@@ -567,7 +567,7 @@ function NuttUI:CreateDatabarOptions(parentCategory)
         _G[self:GetName() .. "Text"]:SetText("Width: " .. text)
 
         local config = NuttUIDB.Databars[selectedBarID]
-        if config then
+        if config and config.Width ~= val then
             config.Width = val
             local barInstance = NuttUI.Databar:Create(selectedBarID)
             NuttUI.Databar:UpdateLayout(barInstance)
@@ -590,7 +590,7 @@ function NuttUI:CreateDatabarOptions(parentCategory)
         _G[self:GetName() .. "Text"]:SetText("Height: " .. val)
 
         local config = NuttUIDB.Databars[selectedBarID]
-        if config then
+        if config and config.Height ~= val then
             config.Height = val
             local barInstance = NuttUI.Databar:Create(selectedBarID)
             NuttUI.Databar:UpdateLayout(barInstance)
