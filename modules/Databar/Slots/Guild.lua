@@ -3,7 +3,6 @@ local _, NuttUI = ...
 NuttUI.Databar:RegisterSlot({
     name = "Guild",
     events = { "GUILD_ROSTER_UPDATE", "PLAYER_GUILD_UPDATE" },
-    events = { "GUILD_ROSTER_UPDATE", "PLAYER_GUILD_UPDATE" },
     -- interval = 10, -- Removed to prevent polling garbage
     Update = function(self, label)
         if not IsInGuild() then

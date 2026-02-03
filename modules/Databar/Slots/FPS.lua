@@ -6,15 +6,19 @@ NuttUI.Databar:RegisterSlot({
     Update = function(self, label)
         local fps = GetFramerate()
         local color = "00ff00"
-        if fps < 30 then color = "ff0000"
-        elseif fps < 60 then color = "ffff00" end
-        return string.format("|cffffffff%s:|r %s%d|r", label or "FPS", NuttUI:GetDatabarColor("|cff" .. color), math.floor(fps))
+        if fps < 30 then
+            color = "ff0000"
+        elseif fps < 60 then
+            color = "ffff00"
+        end
+        return string.format("|cffffffff%s:|r %s%d|r", label or "FPS", NuttUI:GetDatabarColor("|cff" .. color),
+            math.floor(fps))
     end,
     OnEnter = function(self)
         GameTooltip:AddLine("Frames Per Second")
         GameTooltip:AddLine("Target: 60+", 1, 1, 1)
     end,
     OnClick = function(self, button)
-        ToggleFrame(VideoOptionsFrame)
+        Settings.OpenToCategory(Settings.GRAPHICS_CATEGORY_ID)
     end
 })

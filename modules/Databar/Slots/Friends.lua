@@ -3,8 +3,6 @@ local _, NuttUI = ...
 NuttUI.Databar:RegisterSlot({
     name = "Friends",
     events = { "FRIENDLIST_UPDATE", "BN_FRIEND_INFO_CHANGED" },
-    events = { "FRIENDLIST_UPDATE", "BN_FRIEND_INFO_CHANGED" },
-    -- interval = 10, -- Removed to prevent huge memory alloc every 10s
     Update = function(self, label)
         -- Initialize Cache
         if not self.friendCache then self.friendCache = {} end
@@ -16,7 +14,7 @@ NuttUI.Databar:RegisterSlot({
         local wowBNetOnline = 0
 
         -- 1. WoW Friends Cache
-        for i = 1, C_FriendList.GetNumFriends() do
+        for i = 1, (C_FriendList.GetNumFriends() or 0) do
             local info = C_FriendList.GetFriendInfoByIndex(i)
             if info and info.connected then
                 table.insert(self.friendCache, {

@@ -83,8 +83,12 @@ function NuttUI.Tooltip.Init()
         end
     end)
 
-    GameTooltip:HookScript("OnUpdate", function(self)
-        if self.isNuttUIPinned then
+    GameTooltip:HookScript("OnUpdate", function(self, elapsed)
+        if not self.isNuttUIPinned then return end
+
+        self.nuttUIElapsed = (self.nuttUIElapsed or 0) + elapsed
+        if self.nuttUIElapsed > 0.016 then -- ~60fps cap
+            self.nuttUIElapsed = 0
             MoveTooltipToCursor(self)
         end
     end)

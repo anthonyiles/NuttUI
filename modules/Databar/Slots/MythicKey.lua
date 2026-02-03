@@ -3,7 +3,6 @@ local _, NuttUI = ...
 NuttUI.Databar:RegisterSlot({
     name = "Mythic+ Key",
     events = { "BAG_UPDATE" },
-    events = { "BAG_UPDATE" },
     -- interval = 10, -- Removed to prevent polling garbage
     Update = function(self, label)
         local mapID = C_MythicPlus.GetOwnedKeystoneChallengeMapID()
