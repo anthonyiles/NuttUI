@@ -1,0 +1,3 @@
+<Bindings>
+    <Binding name="CLICK RMC_CycleButton:LeftButton" header="NUTTUI" category="NuttUI"/>
+</Bindings>

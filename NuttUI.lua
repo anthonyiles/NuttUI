@@ -12,6 +12,7 @@ local defaults = {
     AutoKeystone = true,
     AutoRepairFallback = true,
     ClassColorDatabars = false,
+    RaidMenuPullTimer = 10,
 }
 
 function NuttUI:GetDatabarColor(defaultHex)
@@ -60,6 +61,14 @@ eventHandler:SetScript("OnEvent", function(self, event, addonName)
 
         if NuttUI.Notes and NuttUI.Notes.Init then
             NuttUI.Notes:Init()
+        end
+
+        if NuttUI.RaidMenu and NuttUI.RaidMenu.Init then
+            NuttUI.RaidMenu:Init()
+        end
+
+        if NuttUI.WorldMarker and NuttUI.WorldMarker.Init then
+            NuttUI.WorldMarker:Init()
         end
 
         self:UnregisterEvent("ADDON_LOADED")
@@ -312,6 +321,8 @@ function NuttUI:CreateOptions()
 
     self:CreateDatabarOptions(category)
     self:CreateNotesOptions(category)
+    self:CreateWorldMarkerOptions(category)
+    self:CreateRaidMenuOptions(category)
 end
 
 function NuttUI:CreateDatabarOptions(parentCategory)
