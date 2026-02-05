@@ -375,7 +375,12 @@ end
 -- Visibility Logic
 --------------------------------------------------------------------------------
 function NuttUI.RaidMenu:UpdateVisibility()
-    if IsInRaid() then
+    local shouldShow = true
+    if NuttUIDB and NuttUIDB.ShowCustomRaidMenu == false then
+        shouldShow = false
+    end
+
+    if IsInRaid() and shouldShow then
         if self.frame then self.frame:Show() end
     else
         if self.frame then self.frame:Hide() end

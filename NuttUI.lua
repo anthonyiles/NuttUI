@@ -13,6 +13,7 @@ local defaults = {
     AutoDeleteConfirm = true,
     AutoRepairFallback = true,
     ClassColorDatabars = false,
+    ShowCustomRaidMenu = true,
     RaidMenuPullTimer = 10,
 }
 

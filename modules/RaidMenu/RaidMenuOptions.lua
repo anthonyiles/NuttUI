@@ -21,9 +21,57 @@ function NuttUI:CreateRaidMenuOptions(parentCategory)
     desc:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 0, -10)
     desc:SetText("Configure the Raid Menu pull timer and other settings.")
 
+    -- Hide Default Blizzard UI Checkbox
+    local hideBlizzardCheckbox = CreateFrame("CheckButton", nil, frame, "UICheckButtonTemplate")
+    hideBlizzardCheckbox:SetPoint("TOPLEFT", desc, "BOTTOMLEFT", 0, -20)
+    hideBlizzardCheckbox.text = hideBlizzardCheckbox:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    hideBlizzardCheckbox.text:SetPoint("LEFT", hideBlizzardCheckbox, "RIGHT", 5, 0)
+    hideBlizzardCheckbox.text:SetText("Hide default Blizzard Raid UI")
+
+    hideBlizzardCheckbox:SetScript("OnShow", function(self)
+        self:SetChecked(NuttUIDB and NuttUIDB.RaidMenuHideBlizzard)
+    end)
+
+    hideBlizzardCheckbox:SetScript("OnClick", function(self)
+        if NuttUIDB then
+            NuttUIDB.RaidMenuHideBlizzard = self:GetChecked()
+            if NuttUI.RaidMenu and NuttUI.RaidMenu.UpdateBlizzardVisibility then
+                NuttUI.RaidMenu:UpdateBlizzardVisibility()
+            end
+        end
+    end)
+
+    local hideBlizzardHint = frame:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
+    hideBlizzardHint:SetPoint("TOPLEFT", hideBlizzardCheckbox, "BOTTOMLEFT", 26, -5)
+    hideBlizzardHint:SetText("Hides the default raid frame manager (left side toggle bar)")
+
+    -- Show Custom Raid UI Checkbox (Renamed)
+    local showMenuCheckbox = CreateFrame("CheckButton", nil, frame, "UICheckButtonTemplate")
+    showMenuCheckbox:SetPoint("TOPLEFT", hideBlizzardHint, "BOTTOMLEFT", -26, -15)
+    showMenuCheckbox.text = showMenuCheckbox:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    showMenuCheckbox.text:SetPoint("LEFT", showMenuCheckbox, "RIGHT", 5, 0)
+    showMenuCheckbox.text:SetText("Show custom Raid UI")
+
+    showMenuCheckbox:SetScript("OnShow", function(self)
+        local isShown = true
+        if NuttUIDB and NuttUIDB.ShowCustomRaidMenu ~= nil then
+            isShown = NuttUIDB.ShowCustomRaidMenu
+        end
+        self:SetChecked(isShown)
+    end)
+
+    showMenuCheckbox:SetScript("OnClick", function(self)
+        if NuttUIDB then
+            NuttUIDB.ShowCustomRaidMenu = self:GetChecked()
+            if NuttUI.RaidMenu and NuttUI.RaidMenu.UpdateVisibility then
+                NuttUI.RaidMenu:UpdateVisibility()
+            end
+        end
+    end)
+
     -- Pull Timer Section
     local pullTimerLabel = frame:CreateFontString(nil, "ARTWORK", "GameFontNormal")
-    pullTimerLabel:SetPoint("TOPLEFT", desc, "BOTTOMLEFT", 0, -30)
+    pullTimerLabel:SetPoint("TOPLEFT", showMenuCheckbox, "BOTTOMLEFT", 0, -30)
     pullTimerLabel:SetText("Pull Timer Duration:")
 
     -- Pull Timer Slider
@@ -52,33 +100,9 @@ function NuttUI:CreateRaidMenuOptions(parentCategory)
         _G[pullTimerSlider:GetName() .. "Text"]:SetText("Pull Timer: " .. currentValue .. "s")
     end)
 
-    -- Hide Default Blizzard UI Checkbox
-    local hideBlizzardCheckbox = CreateFrame("CheckButton", nil, frame, "UICheckButtonTemplate")
-    hideBlizzardCheckbox:SetPoint("TOPLEFT", pullTimerSlider, "BOTTOMLEFT", 0, -30)
-    hideBlizzardCheckbox.text = hideBlizzardCheckbox:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    hideBlizzardCheckbox.text:SetPoint("LEFT", hideBlizzardCheckbox, "RIGHT", 5, 0)
-    hideBlizzardCheckbox.text:SetText("Hide default Blizzard Raid UI")
-
-    hideBlizzardCheckbox:SetScript("OnShow", function(self)
-        self:SetChecked(NuttUIDB and NuttUIDB.RaidMenuHideBlizzard)
-    end)
-
-    hideBlizzardCheckbox:SetScript("OnClick", function(self)
-        if NuttUIDB then
-            NuttUIDB.RaidMenuHideBlizzard = self:GetChecked()
-            if NuttUI.RaidMenu and NuttUI.RaidMenu.UpdateBlizzardVisibility then
-                NuttUI.RaidMenu:UpdateBlizzardVisibility()
-            end
-        end
-    end)
-
-    local hideBlizzardHint = frame:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
-    hideBlizzardHint:SetPoint("TOPLEFT", hideBlizzardCheckbox, "BOTTOMLEFT", 26, -5)
-    hideBlizzardHint:SetText("Hides the default raid frame manager (left side toggle bar)")
-
     -- Vertical Orientation Checkbox
     local verticalCheckbox = CreateFrame("CheckButton", nil, frame, "UICheckButtonTemplate")
-    verticalCheckbox:SetPoint("TOPLEFT", hideBlizzardHint, "BOTTOMLEFT", -26, -15)
+    verticalCheckbox:SetPoint("TOPLEFT", pullTimerSlider, "BOTTOMLEFT", 0, -30)
     verticalCheckbox.text = verticalCheckbox:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     verticalCheckbox.text:SetPoint("LEFT", verticalCheckbox, "RIGHT", 5, 0)
     verticalCheckbox.text:SetText("Vertical layout")
