@@ -10,6 +10,7 @@ local defaults = {
     PinOffsetX = 25,
     PinOffsetY = -20,
     AutoKeystone = true,
+    AutoDeleteConfirm = true,
     AutoRepairFallback = true,
     ClassColorDatabars = false,
     RaidMenuPullTimer = 10,
@@ -315,6 +316,29 @@ function NuttUI:CreateOptions()
     )
     Settings.CreateCheckbox(category, settingFallback, "Use personal gold if guild repair fails.")
 
+    -- 4. Quality of Life Header
+    layout:AddInitializer(CreateSettingsListSectionHeaderInitializer("Quality of Life"))
+
+    -- Auto Confirm Delete Checkbox
+    local function GetAutoDeleteConfirm()
+        return GetValueOrDefault(NuttUIDB, "AutoDeleteConfirm", defaults.AutoDeleteConfirm)
+    end
+
+    local function SetAutoDeleteConfirm(value)
+        if not NuttUIDB then NuttUIDB = {} end
+        NuttUIDB.AutoDeleteConfirm = value
+    end
+
+    local settingAutoDelete = Settings.RegisterProxySetting(
+        category,
+        "NuttUI_AutoDeleteConfirm",
+        Settings.VarType.Boolean,
+        "Auto Confirm Delete",
+        defaults.AutoDeleteConfirm,
+        GetAutoDeleteConfirm,
+        SetAutoDeleteConfirm
+    )
+    Settings.CreateCheckbox(category, settingAutoDelete, "Automatically fills 'DELETE' in confirmation popups.")
 
 
     Settings.RegisterAddOnCategory(category)

@@ -28,4 +28,5 @@ modules/Databar/Slots/Volume.lua
 modules/Notes/Notes.lua
 modules/RaidMenu/RaidMenu.lua
 modules/RaidMenu/RaidMenuOptions.lua
+modules/ItemQol/DeleteMessage.lua
 NuttUI.lua
