@@ -8,7 +8,6 @@ NuttUI.Tooltip = {}
 local function HideStatusBar(tooltip)
     if not NuttUIDB or not NuttUIDB.HideHealthbar then return end
 
-    local statusBar = tooltip.StatusBar
     if not statusBar and _G["GameTooltipStatusBar"] then
         statusBar = _G["GameTooltipStatusBar"]
     end
@@ -59,6 +58,53 @@ local function UpdateAnchor(tooltip, parent)
     MoveTooltipToCursor(tooltip)
 end
 
+local function CreateCustomFade(tooltip)
+    if tooltip.NuttUIFadeAnim then return tooltip.NuttUIFadeAnim end
+
+    local group = tooltip:CreateAnimationGroup()
+    local anim = group:CreateAnimation("Alpha")
+    anim:SetOrder(1)
+    anim:SetFromAlpha(1)
+    anim:SetToAlpha(0)
+    anim:SetDuration(0.2)
+    group:SetScript("OnFinished", function()
+        tooltip:Hide()
+        tooltip:SetAlpha(1)
+    end)
+    
+    tooltip.NuttUIFadeAnim = group
+    tooltip.NuttUIFadeAlpha = anim
+    return group
+end
+
+local function ApplyCustomFade(tooltip)
+    local duration = GetValueOrDefault(NuttUIDB, "TooltipFadeOut", 0.2)
+    local delay = GetValueOrDefault(NuttUIDB, "TooltipFadeDelay", 0)
+    
+    if duration <= 0.01 and delay <= 0.01 then
+        tooltip:Hide()
+        tooltip:SetAlpha(1)
+        return
+    end
+
+    local group = CreateCustomFade(tooltip)
+    if not group then return end
+    
+    if tooltip.NuttUIFadeAlpha then
+        tooltip.NuttUIFadeAlpha:SetDuration(duration)
+        tooltip.NuttUIFadeAlpha:SetStartDelay(delay)
+    end
+    
+    if tooltip:IsShown() then
+        if group:IsPlaying() then group:Stop() end
+        tooltip:SetAlpha(1) 
+        group:Play()
+    end
+end
+
+function NuttUI.Tooltip.UpdateFade()
+end
+
 -- -----------------------------------------------------------------------------
 -- Initialization
 -- -----------------------------------------------------------------------------
@@ -74,6 +120,35 @@ function NuttUI.Tooltip.Init()
     -- 2. Pin to Cursor logic
     hooksecurefunc("GameTooltip_SetDefaultAnchor", function(tooltip, parent)
         UpdateAnchor(tooltip, parent)
+    end)
+
+    -- 3. Override FadeOut
+    if GameTooltip.FadeOut then
+        local originalFadeOut = GameTooltip.FadeOut
+        
+        GameTooltip.FadeOut = function(self)
+            if NuttUIDB and NuttUIDB.EnableTooltipFade then
+                ApplyCustomFade(self)
+            else
+                originalFadeOut(self)
+            end
+        end
+    end
+
+    -- Hook OnShow to reset alpha/state if interrupted
+    GameTooltip:HookScript("OnShow", function(self)
+        if self.NuttUIFadeAnim and self.NuttUIFadeAnim:IsPlaying() then
+            self.NuttUIFadeAnim:Stop()
+        end
+        self:SetAlpha(1)
+    end)
+
+    -- Hook SetOwner to reset alpha/state if switching targets without hiding
+    hooksecurefunc(GameTooltip, "SetOwner", function(self)
+        if self.NuttUIFadeAnim and self.NuttUIFadeAnim:IsPlaying() then
+            self.NuttUIFadeAnim:Stop()
+        end
+        self:SetAlpha(1)
     end)
 
     -- Continuous movement

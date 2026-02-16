@@ -9,6 +9,9 @@ local defaults = {
     PinAnchor = "TOPLEFT",
     PinOffsetX = 25,
     PinOffsetY = -20,
+    TooltipFadeOut = 1,
+    TooltipFadeDelay = 1,
+    EnableTooltipFade = false,
     AutoKeystone = true,
     AutoDeleteConfirm = true,
     AutoRepairFallback = true,
@@ -113,8 +116,129 @@ function NuttUI:CreateOptions()
         return default
     end
 
-    -- 1. Tooltip Settings Header
-    layout:AddInitializer(CreateSettingsListSectionHeaderInitializer("Tooltip Settings"))
+    -- Tooltip Settings Submenu
+    self:CreateTooltipOptions(category)
+
+    -- 2. Mythic+ Utils Header
+    layout:AddInitializer(CreateSettingsListSectionHeaderInitializer("Mythic+ Utils"))
+
+    -- Auto Keystone Checkbox
+    local function GetAutoKeystone()
+        return GetValueOrDefault(NuttUIDB, "AutoKeystone", defaults.AutoKeystone)
+    end
+
+    local function SetAutoKeystone(value)
+        if not NuttUIDB then NuttUIDB = {} end
+        NuttUIDB.AutoKeystone = value
+    end
+
+    local settingAutoKeystone = Settings.RegisterProxySetting(
+        category,
+        "NuttUI_AutoKeystone",
+        Settings.VarType.Boolean,
+        "Automatically place mythic keystone?",
+        defaults.AutoKeystone,
+        GetAutoKeystone,
+        SetAutoKeystone
+    )
+    Settings.CreateCheckbox(category, settingAutoKeystone,
+        "Automatically insert the correct keystone when opening the Font of Power.")
+
+    -- 3. Durability Header
+    layout:AddInitializer(CreateSettingsListSectionHeaderInitializer("Auto Repair"))
+
+    local function GetAutoRepair()
+        return GetValueOrDefault(NuttUIDB, "AutoRepair", "None")
+    end
+
+    local function SetAutoRepair(value)
+        if not NuttUIDB then NuttUIDB = {} end
+        NuttUIDB.AutoRepair = value
+    end
+
+    local function GetAutoRepairOptions()
+        local container = Settings.CreateControlTextContainer()
+        container:Add("None", "None")
+        container:Add("Player", "Personal Gold")
+        container:Add("Guild", "Guild Gold")
+        return container:GetData()
+    end
+
+    local settingAutoRepair = Settings.RegisterProxySetting(
+        category,
+        "NuttUI_AutoRepair",
+        Settings.VarType.String,
+        "Auto Repair",
+        "None",
+        GetAutoRepair,
+        SetAutoRepair
+    )
+    Settings.CreateDropdown(category, settingAutoRepair, GetAutoRepairOptions, "Configure automatic repair preferences.")
+
+    -- Auto Repair Fallback Checkbox
+    local function GetAutoRepairFallback()
+        return GetValueOrDefault(NuttUIDB, "AutoRepairFallback", defaults.AutoRepairFallback)
+    end
+
+    local function SetAutoRepairFallback(value)
+        if not NuttUIDB then NuttUIDB = {} end
+        NuttUIDB.AutoRepairFallback = value
+    end
+
+    local settingFallback = Settings.RegisterProxySetting(
+        category,
+        "NuttUI_AutoRepairFallback",
+        Settings.VarType.Boolean,
+        "Use personal gold if guild repair fails",
+        defaults.AutoRepairFallback,
+        GetAutoRepairFallback,
+        SetAutoRepairFallback
+    )
+    Settings.CreateCheckbox(category, settingFallback, "Use personal gold if guild repair fails.")
+
+    -- 4. Quality of Life Header
+    layout:AddInitializer(CreateSettingsListSectionHeaderInitializer("Quality of Life"))
+
+    -- Auto Confirm Delete Checkbox
+    local function GetAutoDeleteConfirm()
+        return GetValueOrDefault(NuttUIDB, "AutoDeleteConfirm", defaults.AutoDeleteConfirm)
+    end
+
+    local function SetAutoDeleteConfirm(value)
+        if not NuttUIDB then NuttUIDB = {} end
+        NuttUIDB.AutoDeleteConfirm = value
+    end
+
+    local settingAutoDelete = Settings.RegisterProxySetting(
+        category,
+        "NuttUI_AutoDeleteConfirm",
+        Settings.VarType.Boolean,
+        "Auto Confirm Delete",
+        defaults.AutoDeleteConfirm,
+        GetAutoDeleteConfirm,
+        SetAutoDeleteConfirm
+    )
+    Settings.CreateCheckbox(category, settingAutoDelete, "Automatically fills 'DELETE' in confirmation popups.")
+
+    Settings.RegisterAddOnCategory(category)
+
+    self:CreateDatabarOptions(category)
+    self:CreateNotesOptions(category)
+    self:CreateWorldMarkerOptions(category)
+    self:CreateRaidMenuOptions(category)
+end
+
+
+function NuttUI:CreateTooltipOptions(parentCategory)
+    local category, layout = Settings.RegisterVerticalLayoutSubcategory(parentCategory, "Tooltips")
+    
+    -- Helper for boolean defaults
+    local function GetValueOrDefault(table, key, default)
+        if table and table[key] ~= nil then
+            return table[key]
+        end
+        return default
+    end
 
     -- Hide Healthbar Checkbox
     local function GetHideHealthbar()
@@ -136,7 +260,6 @@ function NuttUI:CreateOptions()
         SetHideHealthbar
     )
     Settings.CreateCheckbox(category, settingHealth, "Hide the healthbar under unit tooltips.")
-
 
     -- Pin Tooltip to Cursor Checkbox
     local function GetPinToCursor()
@@ -241,114 +364,83 @@ function NuttUI:CreateOptions()
     optionsY:SetLabelFormatter(MinimalSliderWithSteppersMixin.Label.Right)
     Settings.CreateSlider(category, settingOffsetY, optionsY, "Vertical offset from cursor.")
 
-    -- 2. Mythic+ Utils Header
-    layout:AddInitializer(CreateSettingsListSectionHeaderInitializer("Mythic+ Utils"))
-
-    -- Auto Keystone Checkbox
-    local function GetAutoKeystone()
-        return GetValueOrDefault(NuttUIDB, "AutoKeystone", defaults.AutoKeystone)
+    -- Enable Custom Fade Checkbox
+    local function GetEnableFade()
+        return GetValueOrDefault(NuttUIDB, "EnableTooltipFade", defaults.EnableTooltipFade)
     end
 
-    local function SetAutoKeystone(value)
+    local function SetEnableFade(value)
         if not NuttUIDB then NuttUIDB = {} end
-        NuttUIDB.AutoKeystone = value
+        NuttUIDB.EnableTooltipFade = value
     end
 
-    local settingAutoKeystone = Settings.RegisterProxySetting(
+    local settingEnableFade = Settings.RegisterProxySetting(
         category,
-        "NuttUI_AutoKeystone",
+        "NuttUI_EnableTooltipFade",
         Settings.VarType.Boolean,
-        "Automatically place mythic keystone?",
-        defaults.AutoKeystone,
-        GetAutoKeystone,
-        SetAutoKeystone
+        "Enable Custom Fade Animation",
+        defaults.EnableTooltipFade,
+        GetEnableFade,
+        SetEnableFade
     )
-    Settings.CreateCheckbox(category, settingAutoKeystone,
-        "Automatically insert the correct keystone when opening the Font of Power.")
+    Settings.CreateCheckbox(category, settingEnableFade, "Enable the smooth fade out animation for tooltips.")
 
-    -- 3. Durability Header
-    layout:AddInitializer(CreateSettingsListSectionHeaderInitializer("Auto Repair"))
-
-    local function GetAutoRepair()
-        return GetValueOrDefault(NuttUIDB, "AutoRepair", "None")
+    -- Tooltip Fade Delay Slider
+    local function GetFadeDelay()
+        return GetValueOrDefault(NuttUIDB, "TooltipFadeDelay", defaults.TooltipFadeDelay)
     end
 
-    local function SetAutoRepair(value)
+    local function SetFadeDelay(value)
         if not NuttUIDB then NuttUIDB = {} end
-        NuttUIDB.AutoRepair = value
+        local rounded = math.floor(value * 10 + 0.5) / 10
+        NuttUIDB.TooltipFadeDelay = rounded
     end
 
-    local function GetAutoRepairOptions()
-        local container = Settings.CreateControlTextContainer()
-        container:Add("None", "None")
-        container:Add("Player", "Personal Gold")
-        container:Add("Guild", "Guild Gold")
-        return container:GetData()
-    end
-
-    local settingAutoRepair = Settings.RegisterProxySetting(
+    local settingFadeDelay = Settings.RegisterProxySetting(
         category,
-        "NuttUI_AutoRepair",
-        Settings.VarType.String,
-        "Auto Repair",
-        "None",
-        GetAutoRepair,
-        SetAutoRepair
+        "NuttUI_TooltipFadeDelay",
+        Settings.VarType.Number,
+        "Fade Delay",
+        defaults.TooltipFadeDelay,
+        GetFadeDelay,
+        SetFadeDelay
     )
-    Settings.CreateDropdown(category, settingAutoRepair, GetAutoRepairOptions, "Configure automatic repair preferences.")
+    -- Range: 0 to 5.0, Step: 0.1
+    local optionsDelay = Settings.CreateSliderOptions(0, 5.0, 0.1)
+    optionsDelay:SetLabelFormatter(MinimalSliderWithSteppersMixin.Label.Right, function(value)
+        return string.format("%.1f", value)
+    end)
+    Settings.CreateSlider(category, settingFadeDelay, optionsDelay, "How long to wait before fading (seconds).")
 
-    -- Auto Repair Fallback Checkbox
-    local function GetAutoRepairFallback()
-        return GetValueOrDefault(NuttUIDB, "AutoRepairFallback", defaults.AutoRepairFallback)
+    -- Tooltip Fade Out Duration Slider
+    local function GetTooltipFadeOut()
+        return GetValueOrDefault(NuttUIDB, "TooltipFadeOut", defaults.TooltipFadeOut)
     end
 
-    local function SetAutoRepairFallback(value)
+    local function SetTooltipFadeOut(value)
         if not NuttUIDB then NuttUIDB = {} end
-        NuttUIDB.AutoRepairFallback = value
+        local rounded = math.floor(value * 10 + 0.5) / 10
+        NuttUIDB.TooltipFadeOut = rounded
+        if NuttUI.Tooltip and NuttUI.Tooltip.UpdateFade then
+            NuttUI.Tooltip.UpdateFade()
+        end
     end
 
-    local settingFallback = Settings.RegisterProxySetting(
+    local settingFadeOut = Settings.RegisterProxySetting(
         category,
-        "NuttUI_AutoRepairFallback",
-        Settings.VarType.Boolean,
-        "Use personal gold if guild repair fails",
-        defaults.AutoRepairFallback,
-        GetAutoRepairFallback,
-        SetAutoRepairFallback
+        "NuttUI_TooltipFadeOut",
+        Settings.VarType.Number,
+        "Fade Out Duration",
+        defaults.TooltipFadeOut,
+        GetTooltipFadeOut,
+        SetTooltipFadeOut
     )
-    Settings.CreateCheckbox(category, settingFallback, "Use personal gold if guild repair fails.")
-
-    -- 4. Quality of Life Header
-    layout:AddInitializer(CreateSettingsListSectionHeaderInitializer("Quality of Life"))
-
-    -- Auto Confirm Delete Checkbox
-    local function GetAutoDeleteConfirm()
-        return GetValueOrDefault(NuttUIDB, "AutoDeleteConfirm", defaults.AutoDeleteConfirm)
-    end
-
-    local function SetAutoDeleteConfirm(value)
-        if not NuttUIDB then NuttUIDB = {} end
-        NuttUIDB.AutoDeleteConfirm = value
-    end
-
-    local settingAutoDelete = Settings.RegisterProxySetting(
-        category,
-        "NuttUI_AutoDeleteConfirm",
-        Settings.VarType.Boolean,
-        "Auto Confirm Delete",
-        defaults.AutoDeleteConfirm,
-        GetAutoDeleteConfirm,
-        SetAutoDeleteConfirm
-    )
-    Settings.CreateCheckbox(category, settingAutoDelete, "Automatically fills 'DELETE' in confirmation popups.")
-
-
-    Settings.RegisterAddOnCategory(category)
-
-    self:CreateDatabarOptions(category)
-    self:CreateNotesOptions(category)
-    self:CreateWorldMarkerOptions(category)
-    self:CreateRaidMenuOptions(category)
+    -- Range: 0 to 3.0, Step: 0.1
+    local optionsFade = Settings.CreateSliderOptions(0, 3.0, 0.1)
+    optionsFade:SetLabelFormatter(MinimalSliderWithSteppersMixin.Label.Right, function(value)
+        return string.format("%.1f", value)
+    end)
+    Settings.CreateSlider(category, settingFadeOut, optionsFade, "How quickly the tooltip fades away (seconds).")
 end
 
 function NuttUI:CreateDatabarOptions(parentCategory)
