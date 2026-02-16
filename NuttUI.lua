@@ -15,6 +15,7 @@ local defaults = {
     ClassColorDatabars = false,
     ShowCustomRaidMenu = true,
     RaidMenuPullTimer = 10,
+    RaidMenuHideBlizzard = false,
 }
 
 function NuttUI:GetDatabarColor(defaultHex)

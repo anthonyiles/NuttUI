@@ -423,4 +423,12 @@ function NuttUI.RaidMenu:Init()
     eventFrame:SetScript("OnEvent", OnVisibilityEvent)
 
     self.eventFrame = eventFrame
+
+    if CompactRaidFrameManager then
+        hooksecurefunc(CompactRaidFrameManager, "Show", function(self)
+            if NuttUIDB and NuttUIDB.RaidMenuHideBlizzard then
+                self:Hide()
+            end
+        end)
+    end
 end
