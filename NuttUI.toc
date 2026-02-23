@@ -29,4 +29,5 @@ modules/Notes/Notes.lua
 modules/RaidMenu/RaidMenu.lua
 modules/RaidMenu/RaidMenuOptions.lua
 modules/ItemQol/DeleteMessage.lua
+modules/TalkingHead/TalkingHead.lua
 NuttUI.lua

@@ -19,6 +19,7 @@ local defaults = {
     ShowCustomRaidMenu = true,
     RaidMenuPullTimer = 10,
     RaidMenuHideBlizzard = false,
+    DisableTalkingHead = false,
 }
 
 function NuttUI:GetDatabarColor(defaultHex)
@@ -75,6 +76,10 @@ eventHandler:SetScript("OnEvent", function(self, event, addonName)
 
         if NuttUI.WorldMarker and NuttUI.WorldMarker.Init then
             NuttUI.WorldMarker:Init()
+        end
+
+        if NuttUI.TalkingHead and NuttUI.TalkingHead.Init then
+            NuttUI.TalkingHead:Init()
         end
 
         self:UnregisterEvent("ADDON_LOADED")
@@ -219,6 +224,30 @@ function NuttUI:CreateOptions()
         SetAutoDeleteConfirm
     )
     Settings.CreateCheckbox(category, settingAutoDelete, "Automatically fills 'DELETE' in confirmation popups.")
+
+    -- Disable Talking Head Checkbox
+    local function GetDisableTalkingHead()
+        return GetValueOrDefault(NuttUIDB, "DisableTalkingHead", defaults.DisableTalkingHead)
+    end
+
+    local function SetDisableTalkingHead(value)
+        if not NuttUIDB then NuttUIDB = {} end
+        NuttUIDB.DisableTalkingHead = value
+        if NuttUI.TalkingHead and NuttUI.TalkingHead.UpdateState then
+            NuttUI.TalkingHead.UpdateState()
+        end
+    end
+
+    local settingDisableTalkingHead = Settings.RegisterProxySetting(
+        category,
+        "NuttUI_DisableTalkingHead",
+        Settings.VarType.Boolean,
+        "Disable Talking Head",
+        defaults.DisableTalkingHead,
+        GetDisableTalkingHead,
+        SetDisableTalkingHead
+    )
+    Settings.CreateCheckbox(category, settingDisableTalkingHead, "Hides the talking head frame.")
 
     Settings.RegisterAddOnCategory(category)
 
