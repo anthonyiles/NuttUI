@@ -17,6 +17,7 @@ local defaults = {
     AutoKeystone = true,
     AutoDeleteConfirm = true,
     AutoRepairFallback = true,
+    AutoSellJunk = false,
     ClassColorDatabars = false,
     ShowCustomRaidMenu = true,
     RaidMenuPullTimer = 10,
@@ -202,6 +203,27 @@ function NuttUI:CreateOptions()
         SetAutoRepairFallback
     )
     Settings.CreateCheckbox(category, settingFallback, "Use personal gold if guild repair fails.")
+
+    -- Auto Sell Junk Checkbox
+    local function GetAutoSellJunk()
+        return GetValueOrDefault(NuttUIDB, "AutoSellJunk", defaults.AutoSellJunk)
+    end
+
+    local function SetAutoSellJunk(value)
+        if not NuttUIDB then NuttUIDB = {} end
+        NuttUIDB.AutoSellJunk = value
+    end
+
+    local settingAutoSellJunk = Settings.RegisterProxySetting(
+        category,
+        "NuttUI_AutoSellJunk",
+        Settings.VarType.Boolean,
+        "Auto Sell Junk",
+        defaults.AutoSellJunk,
+        GetAutoSellJunk,
+        SetAutoSellJunk
+    )
+    Settings.CreateCheckbox(category, settingAutoSellJunk, "Automatically sell gray quality items when visiting a merchant.")
 
     -- 4. Quality of Life Header
     layout:AddInitializer(CreateSettingsListSectionHeaderInitializer("Quality of Life"))

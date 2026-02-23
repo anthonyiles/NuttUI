@@ -20,9 +20,28 @@ function NuttUI.AutoRepair:Init()
     frame:RegisterEvent("MERCHANT_SHOW")
     frame:SetScript("OnEvent", function(self, event)
         if event ~= "MERCHANT_SHOW" then return end
-        if not CanMerchantRepair() then return end
         
         local settings = NuttUIDB or {}
+
+        -- Auto Sell Junk
+        if settings.AutoSellJunk then
+            local soldJunk = false
+            for bag = 0, 4 do
+                for slot = 1, C_Container.GetContainerNumSlots(bag) do
+                    local info = C_Container.GetContainerItemInfo(bag, slot)
+                    if info and info.quality == Enum.ItemQuality.Poor and not info.hasNoValue then
+                        C_Container.UseContainerItem(bag, slot)
+                        soldJunk = true
+                    end
+                end
+            end
+            if soldJunk then
+                print("|cff00ff00NuttUI:|r Auto-Sold junk items.")
+            end
+        end
+
+        if not CanMerchantRepair() then return end
+        
         local repairMode = settings.AutoRepair
         local fallback = settings.AutoRepairFallback
         
