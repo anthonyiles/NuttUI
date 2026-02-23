@@ -12,6 +12,8 @@ local defaults = {
     TooltipFadeOut = 1,
     TooltipFadeDelay = 1,
     EnableTooltipFade = false,
+    HideTooltipInCombat = false,
+    TooltipCombatOverrideKey = "NONE",
     AutoKeystone = true,
     AutoDeleteConfirm = true,
     AutoRepairFallback = true,
@@ -470,6 +472,60 @@ function NuttUI:CreateTooltipOptions(parentCategory)
         return string.format("%.1f", value)
     end)
     Settings.CreateSlider(category, settingFadeOut, optionsFade, "How quickly the tooltip fades away (seconds).")
+
+    -- Hide in Combat Checkbox
+    local function GetHideTooltipInCombat()
+        return GetValueOrDefault(NuttUIDB, "HideTooltipInCombat", defaults.HideTooltipInCombat)
+    end
+
+    local function SetHideTooltipInCombat(value)
+        if not NuttUIDB then NuttUIDB = {} end
+        NuttUIDB.HideTooltipInCombat = value
+    end
+
+    local settingHideCombat = Settings.RegisterProxySetting(
+        category,
+        "NuttUI_HideTooltipInCombat",
+        Settings.VarType.Boolean,
+        "Hide Tooltip in Combat",
+        defaults.HideTooltipInCombat,
+        GetHideTooltipInCombat,
+        SetHideTooltipInCombat
+    )
+    Settings.CreateCheckbox(category, settingHideCombat, "Hide tooltips while you are in combat.")
+
+    -- Combat Override Key Dropdown
+    local function GetCombatOverrideKey()
+        return GetValueOrDefault(NuttUIDB, "TooltipCombatOverrideKey", defaults.TooltipCombatOverrideKey)
+    end
+
+    local function SetCombatOverrideKey(value)
+        if not NuttUIDB then NuttUIDB = {} end
+        NuttUIDB.TooltipCombatOverrideKey = value
+    end
+
+    local function GetCombatOverrideKeyOptions()
+        return function()
+            local container = Settings.CreateControlTextContainer()
+            container:Add("NONE", "None")
+            container:Add("SHIFT", "Shift")
+            container:Add("CTRL", "Control")
+            container:Add("ALT", "Alt")
+            return container:GetData()
+        end
+    end
+
+    local settingCombatKey = Settings.RegisterProxySetting(
+        category,
+        "NuttUI_TooltipCombatOverrideKey",
+        Settings.VarType.String,
+        "Combat Override Key",
+        defaults.TooltipCombatOverrideKey,
+        GetCombatOverrideKey,
+        SetCombatOverrideKey
+    )
+    Settings.CreateDropdown(category, settingCombatKey, GetCombatOverrideKeyOptions(),
+        "Press this key to temporarily show tooltips in combat.")
 end
 
 function NuttUI:CreateDatabarOptions(parentCategory)

@@ -33,6 +33,27 @@ local function GetValueOrDefault(table, key, default)
     return default
 end
 
+local function IsModifierActive(key)
+    if key == "SHIFT" then return IsShiftKeyDown() end
+    if key == "CTRL" then return IsControlKeyDown() end
+    if key == "ALT" then return IsAltKeyDown() end
+    return false
+end
+
+local function ShouldHideInCombat()
+    if not NuttUIDB or not NuttUIDB.HideTooltipInCombat then return false end
+    if not InCombatLockdown() then return false end
+    
+    local key = NuttUIDB.TooltipCombatOverrideKey
+    if key and key ~= "NONE" then
+        if IsModifierActive(key) then
+            return false  -- Force show in combat with modifier
+        end
+    end
+    
+    return true  -- Hide in combat (no key pressed or NONE)
+end
+
 local function MoveTooltipToCursor(tooltip)
     local anchor = GetValueOrDefault(NuttUIDB, "PinAnchor", "BOTTOMLEFT")
     local offsetX = GetValueOrDefault(NuttUIDB, "PinOffsetX", 0)
@@ -137,6 +158,11 @@ function NuttUI.Tooltip.Init()
 
     -- Hook OnShow to reset alpha/state if interrupted
     GameTooltip:HookScript("OnShow", function(self)
+        if ShouldHideInCombat() then
+            self:Hide()
+            return
+        end
+
         if self.NuttUIFadeAnim and self.NuttUIFadeAnim:IsPlaying() then
             self.NuttUIFadeAnim:Stop()
         end
