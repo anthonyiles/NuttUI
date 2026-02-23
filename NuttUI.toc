@@ -10,6 +10,7 @@
 utils/Tooltip.lua
 utils/AutoKeystone.lua
 utils/AutoRepair.lua
+utils/AutoRoleAccept.lua
 modules/WorldMarker/WorldMarker.lua
 modules/WorldMarker/WorldMarkerOptions.lua
 modules/Databar/Core.lua

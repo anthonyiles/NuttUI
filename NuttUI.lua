@@ -18,6 +18,8 @@ local defaults = {
     AutoDeleteConfirm = true,
     AutoRepairFallback = true,
     AutoSellJunk = false,
+    AutoRoleAccept = true,
+    AutoRoleAcceptModifier = "NONE",
     ClassColorDatabars = false,
     ShowCustomRaidMenu = true,
     RaidMenuPullTimer = 10,
@@ -67,6 +69,10 @@ eventHandler:SetScript("OnEvent", function(self, event, addonName)
 
         if NuttUI.AutoKeystone and NuttUI.AutoKeystone.Init then
             NuttUI.AutoKeystone:Init()
+        end
+
+        if NuttUI.AutoRoleAccept and NuttUI.AutoRoleAccept.Init then
+            NuttUI.AutoRoleAccept:Init()
         end
 
         if NuttUI.Notes and NuttUI.Notes.Init then
@@ -227,6 +233,60 @@ function NuttUI:CreateOptions()
 
     -- 4. Quality of Life Header
     layout:AddInitializer(CreateSettingsListSectionHeaderInitializer("Quality of Life"))
+
+    -- Auto Role Accept Checkbox
+    local function GetAutoRoleAccept()
+        return GetValueOrDefault(NuttUIDB, "AutoRoleAccept", defaults.AutoRoleAccept)
+    end
+
+    local function SetAutoRoleAccept(value)
+        if not NuttUIDB then NuttUIDB = {} end
+        NuttUIDB.AutoRoleAccept = value
+    end
+
+    local settingAutoRoleAccept = Settings.RegisterProxySetting(
+        category,
+        "NuttUI_AutoRoleAccept",
+        Settings.VarType.Boolean,
+        "Auto Role Accept",
+        defaults.AutoRoleAccept,
+        GetAutoRoleAccept,
+        SetAutoRoleAccept
+    )
+    Settings.CreateCheckbox(category, settingAutoRoleAccept, "Automatically accept role checks when popping LFG queues.")
+
+    -- Auto Role Accept Modifier Dropdown
+    local function GetAutoRoleModifier()
+        return GetValueOrDefault(NuttUIDB, "AutoRoleAcceptModifier", defaults.AutoRoleAcceptModifier)
+    end
+
+    local function SetAutoRoleModifier(value)
+        if not NuttUIDB then NuttUIDB = {} end
+        NuttUIDB.AutoRoleAcceptModifier = value
+    end
+
+    local function GetAutoRoleModifierOptions()
+        return function()
+            local container = Settings.CreateControlTextContainer()
+            container:Add("NONE", "None")
+            container:Add("SHIFT", "Shift")
+            container:Add("CTRL", "Control")
+            container:Add("ALT", "Alt")
+            return container:GetData()
+        end
+    end
+
+    local settingAutoRoleModifier = Settings.RegisterProxySetting(
+        category,
+        "NuttUI_AutoRoleAcceptModifier",
+        Settings.VarType.String,
+        "Auto Role Override Key",
+        defaults.AutoRoleAcceptModifier,
+        GetAutoRoleModifier,
+        SetAutoRoleModifier
+    )
+    Settings.CreateDropdown(category, settingAutoRoleModifier, GetAutoRoleModifierOptions(),
+        "Press this key to temporarily bypass the auto role accept feature.")
 
     -- Auto Confirm Delete Checkbox
     local function GetAutoDeleteConfirm()
