@@ -375,6 +375,8 @@ end
 -- Visibility Logic
 --------------------------------------------------------------------------------
 function NuttUI.RaidMenu:UpdateVisibility()
+    if InCombatLockdown() then return end
+    
     local shouldShow = true
     if NuttUIDB and NuttUIDB.ShowCustomRaidMenu == false then
         shouldShow = false
@@ -389,17 +391,16 @@ function NuttUI.RaidMenu:UpdateVisibility()
 end
 
 function NuttUI.RaidMenu:UpdateBlizzardVisibility()
+    if InCombatLockdown() then return end
+
     local shouldHide = NuttUIDB and NuttUIDB.RaidMenuHideBlizzard
 
     if CompactRaidFrameManager then
         if shouldHide then
             CompactRaidFrameManager:Hide()
-            CompactRaidFrameManager:UnregisterAllEvents()
+            CompactRaidFrameManager:EnableMouse(false)
         else
-            CompactRaidFrameManager:RegisterEvent("DISPLAY_SIZE_CHANGED")
-            CompactRaidFrameManager:RegisterEvent("UI_SCALE_CHANGED")
-            CompactRaidFrameManager:RegisterEvent("GROUP_ROSTER_UPDATE")
-            CompactRaidFrameManager:RegisterEvent("PLAYER_ENTERING_WORLD")
+            CompactRaidFrameManager:EnableMouse(true)
             if IsInRaid() or IsInGroup() then
                 CompactRaidFrameManager:Show()
             end
@@ -420,15 +421,32 @@ function NuttUI.RaidMenu:Init()
     local eventFrame = CreateFrame("Frame")
     eventFrame:RegisterEvent("GROUP_ROSTER_UPDATE")
     eventFrame:RegisterEvent("PLAYER_ENTERING_WORLD")
+    eventFrame:RegisterEvent("PLAYER_ROLES_ASSIGNED")
     eventFrame:SetScript("OnEvent", OnVisibilityEvent)
 
     self.eventFrame = eventFrame
 
     if CompactRaidFrameManager then
-        hooksecurefunc(CompactRaidFrameManager, "Show", function(self)
-            if NuttUIDB and NuttUIDB.RaidMenuHideBlizzard then
-                self:Hide()
-            end
-        end)
+        if not CompactRaidFrameManager._NuttUI_HookedShow then
+            CompactRaidFrameManager._NuttUI_HookedShow = true
+            hooksecurefunc(CompactRaidFrameManager, "Show", function(manager)
+                if InCombatLockdown() then return end
+                if NuttUIDB and NuttUIDB.RaidMenuHideBlizzard then
+                    manager:Hide()
+                    manager:EnableMouse(false)
+                end
+            end)
+        end
+
+        if not CompactRaidFrameManager._NuttUI_HookedSetShown then
+            CompactRaidFrameManager._NuttUI_HookedSetShown = true
+            hooksecurefunc(CompactRaidFrameManager, "SetShown", function(manager, shown)
+                if InCombatLockdown() then return end
+                if shown and NuttUIDB and NuttUIDB.RaidMenuHideBlizzard then
+                    manager:Hide()
+                    manager:EnableMouse(false)
+                end
+            end)
+        end
     end
 end
