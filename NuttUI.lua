@@ -19,6 +19,7 @@ local defaults = {
     AutoRepairFallback = true,
     AutoSellJunk = false,
     AutoRoleAccept = true,
+    FastLoot = true,
     AutoRoleAcceptModifier = "NONE",
     ClassColorDatabars = false,
     ShowCustomRaidMenu = true,
@@ -73,6 +74,10 @@ eventHandler:SetScript("OnEvent", function(self, event, addonName)
 
         if NuttUI.AutoRoleAccept and NuttUI.AutoRoleAccept.Init then
             NuttUI.AutoRoleAccept:Init()
+        end
+
+        if NuttUI.FastLoot and NuttUI.FastLoot.Init then
+            NuttUI.FastLoot:Init()
         end
 
         if NuttUI.Notes and NuttUI.Notes.Init then
@@ -233,6 +238,27 @@ function NuttUI:CreateOptions()
 
     -- 4. Quality of Life Header
     layout:AddInitializer(CreateSettingsListSectionHeaderInitializer("Quality of Life"))
+
+    -- Fast Loot Checkbox
+    local function GetFastLoot()
+        return GetValueOrDefault(NuttUIDB, "FastLoot", defaults.FastLoot)
+    end
+
+    local function SetFastLoot(value)
+        if not NuttUIDB then NuttUIDB = {} end
+        NuttUIDB.FastLoot = value
+    end
+
+    local settingFastLoot = Settings.RegisterProxySetting(
+        category,
+        "NuttUI_FastLoot",
+        Settings.VarType.Boolean,
+        "Fast Loot",
+        defaults.FastLoot,
+        GetFastLoot,
+        SetFastLoot
+    )
+    Settings.CreateCheckbox(category, settingFastLoot, "Instantly loot all items when the loot window opens.")
 
     -- Auto Role Accept Checkbox
     local function GetAutoRoleAccept()
