@@ -26,6 +26,7 @@ local defaults = {
     RaidMenuPullTimer = 10,
     RaidMenuHideBlizzard = false,
     DisableTalkingHead = false,
+    AutoGossip = false,
 }
 
 function NuttUI:GetDatabarColor(defaultHex)
@@ -78,6 +79,10 @@ eventHandler:SetScript("OnEvent", function(self, event, addonName)
 
         if NuttUI.FastLoot and NuttUI.FastLoot.Init then
             NuttUI.FastLoot:Init()
+        end
+
+        if NuttUI.AutoGossip and NuttUI.AutoGossip.Init then
+            NuttUI.AutoGossip:Init()
         end
 
         if NuttUI.Notes and NuttUI.Notes.Init then
@@ -238,6 +243,27 @@ function NuttUI:CreateOptions()
 
     -- 4. Quality of Life Header
     layout:AddInitializer(CreateSettingsListSectionHeaderInitializer("Quality of Life"))
+
+    -- Auto Gossip Checkbox
+    local function GetAutoGossip()
+        return GetValueOrDefault(NuttUIDB, "AutoGossip", defaults.AutoGossip)
+    end
+
+    local function SetAutoGossip(value)
+        if not NuttUIDB then NuttUIDB = {} end
+        NuttUIDB.AutoGossip = value
+    end
+
+    local settingAutoGossip = Settings.RegisterProxySetting(
+        category,
+        "NuttUI_AutoGossip",
+        Settings.VarType.Boolean,
+        "Auto Select Single Gossip",
+        defaults.AutoGossip,
+        GetAutoGossip,
+        SetAutoGossip
+    )
+    Settings.CreateCheckbox(category, settingAutoGossip, "Automatically select single gossip options.")
 
     -- Fast Loot Checkbox
     local function GetFastLoot()

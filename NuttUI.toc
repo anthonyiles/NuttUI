@@ -12,6 +12,7 @@ utils/AutoKeystone.lua
 utils/AutoRepair.lua
 utils/AutoRoleAccept.lua
 utils/FastLoot.lua
+utils/AutoGossip.lua
 modules/WorldMarker/WorldMarker.lua
 modules/WorldMarker/WorldMarkerOptions.lua
 modules/Databar/Core.lua
