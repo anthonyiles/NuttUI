@@ -20,14 +20,17 @@ NuttUI.Databar:RegisterSlot({
         -- Build Cache
         local count = 0
         for i = 1, total do
-            local name, rank, _, _, _, _, _, _, isOnline, status, classFileName = GetGuildRosterInfo(i)
+            local name, rank, _, level, _, zone, _, _, isOnline, status, classFileName = GetGuildRosterInfo(i)
             if isOnline then
                 count = count + 1
-                -- Limit cache size for tooltip performance if guild is huge, but user wants to see them.
-                -- Let's cache up to 50 for tooltip display to be safe?
-                -- Original code had a limit of 30 in OnEnter. Let's keep data for 40.
                 if count <= 40 then
                     local nameStr = Ambiguate(name, "none")
+                    if level then
+                        nameStr = string.format("(%d) %s", level, nameStr)
+                    end
+                    if zone and zone ~= "" then
+                        nameStr = string.format("%s - %s", nameStr, zone)
+                    end
                     if status and status ~= "" and status ~= 0 and status ~= "0" then
                         nameStr = nameStr .. " " .. status
                     end

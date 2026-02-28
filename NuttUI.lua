@@ -258,7 +258,7 @@ function NuttUI:CreateOptions()
         category,
         "NuttUI_AutoGossip",
         Settings.VarType.Boolean,
-        "Auto Select Single Gossip",
+        "Auto Select Single Gossip (Shift to override)",
         defaults.AutoGossip,
         GetAutoGossip,
         SetAutoGossip
