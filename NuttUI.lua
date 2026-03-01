@@ -461,12 +461,12 @@ function NuttUI:CreateTooltipOptions(parentCategory)
         category,
         "NuttUI_ClassColorTooltipNames",
         Settings.VarType.Boolean,
-        "Class Color Player Names",
+        "Class Colour Player Names",
         defaults.ClassColorTooltipNames,
         GetClassColorTooltipNames,
         SetClassColorTooltipNames
     )
-    Settings.CreateCheckbox(category, settingClassColorNames, "Color player names in tooltips by their class.")
+    Settings.CreateCheckbox(category, settingClassColorNames, "Colour player names in tooltips by their class.")
 
     -- Pin Tooltip to Cursor Checkbox
     local function GetPinToCursor()
