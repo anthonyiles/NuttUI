@@ -57,12 +57,8 @@ NuttUI.Databar:RegisterSlot({
 
         if self.guildCache then
             for _, info in ipairs(self.guildCache) do
-                local classColor = C_ClassColor.GetClassColor(info.className)
-                if classColor then
-                    GameTooltip:AddDoubleLine(info.name, info.rank, classColor.r, classColor.g, classColor.b, 1, 1, 1)
-                else
-                    GameTooltip:AddDoubleLine(info.name, info.rank, 1, 1, 1, 1, 1, 1)
-                end
+                local r, g, b = NuttUI:GetClassColorRGB(info.className)
+                GameTooltip:AddDoubleLine(info.name, info.rank, r, g, b, 1, 1, 1)
             end
 
             local shown = #self.guildCache
@@ -105,9 +101,7 @@ NuttUI.Databar:RegisterSlot({
                         whisperMenu:CreateTitle("No online members")
                     else
                         for _, m in ipairs(members) do
-                            local color = C_ClassColor.GetClassColor(m.class)
-                            local text = m.name
-                            if color then text = color:WrapTextInColorCode(text) end
+                            local text = NuttUI:WrapTextInClassColor(m.name, m.class)
 
                             inviteMenu:CreateButton(text, function() C_PartyInfo.InviteUnit(m.name) end)
                             whisperMenu:CreateButton(text, function() ChatFrame_OpenChat("/w " .. m.name .. " ") end)

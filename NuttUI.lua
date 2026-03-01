@@ -24,20 +24,41 @@ local defaults = {
     ClassColorDatabars = false,
     ShowCustomRaidMenu = true,
     RaidMenuPullTimer = 10,
-    RaidMenuHideBlizzard = false,
     DisableTalkingHead = false,
     AutoGossip = false,
+    ClassColorTooltipNames = false,
 }
 
 function NuttUI:GetDatabarColor(defaultHex)
     if NuttUIDB and NuttUIDB.ClassColorDatabars then
         local _, classFileName = UnitClass("player")
-        local color = C_ClassColor.GetClassColor(classFileName)
+        local color = self:GetClassColorObj(classFileName)
         if color then
             return color:GenerateHexColorMarkup()
         end
     end
     return defaultHex or "|cffffffff"
+end
+
+function NuttUI:GetClassColorObj(classFileName)
+    if not classFileName then return nil end
+    return C_ClassColor.GetClassColor(classFileName)
+end
+
+function NuttUI:GetClassColorRGB(classFileName)
+    local color = self:GetClassColorObj(classFileName)
+    if color then
+        return color.r, color.g, color.b
+    end
+    return 1, 1, 1
+end
+
+function NuttUI:WrapTextInClassColor(text, classFileName)
+    local color = self:GetClassColorObj(classFileName)
+    if color then
+        return color:WrapTextInColorCode(text)
+    end
+    return text
 end
 
 --------------------------------------------------------------------------------
@@ -425,6 +446,27 @@ function NuttUI:CreateTooltipOptions(parentCategory)
         SetHideHealthbar
     )
     Settings.CreateCheckbox(category, settingHealth, "Hide the healthbar under unit tooltips.")
+
+    -- Class Color Tooltip Names Checkbox
+    local function GetClassColorTooltipNames()
+        return GetValueOrDefault(NuttUIDB, "ClassColorTooltipNames", defaults.ClassColorTooltipNames)
+    end
+
+    local function SetClassColorTooltipNames(value)
+        if not NuttUIDB then NuttUIDB = {} end
+        NuttUIDB.ClassColorTooltipNames = value
+    end
+
+    local settingClassColorNames = Settings.RegisterProxySetting(
+        category,
+        "NuttUI_ClassColorTooltipNames",
+        Settings.VarType.Boolean,
+        "Class Color Player Names",
+        defaults.ClassColorTooltipNames,
+        GetClassColorTooltipNames,
+        SetClassColorTooltipNames
+    )
+    Settings.CreateCheckbox(category, settingClassColorNames, "Color player names in tooltips by their class.")
 
     -- Pin Tooltip to Cursor Checkbox
     local function GetPinToCursor()

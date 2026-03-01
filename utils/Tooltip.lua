@@ -131,10 +131,24 @@ end
 -- -----------------------------------------------------------------------------
 
 function NuttUI.Tooltip.Init()
-    -- 1. Hide Healthbar logic
+    -- 1. Unit Tooltip Post Call (Healthbar and Class Color)
     if TooltipDataProcessor and TooltipDataProcessor.AddTooltipPostCall then
         TooltipDataProcessor.AddTooltipPostCall(Enum.TooltipDataType.Unit, function(tooltip)
             HideStatusBar(tooltip)
+
+            if NuttUIDB and NuttUIDB.ClassColorTooltipNames then
+                local _, unit = tooltip:GetUnit()
+                if unit and UnitIsPlayer(unit) then
+                    local _, classFileName = UnitClass(unit)
+                    if classFileName then
+                        local r, g, b = NuttUI:GetClassColorRGB(classFileName)
+                        local textLeft1 = _G[tooltip:GetName() .. "TextLeft1"]
+                        if textLeft1 then
+                            textLeft1:SetTextColor(r, g, b)
+                        end
+                    end
+                end
+            end
         end)
     end
 

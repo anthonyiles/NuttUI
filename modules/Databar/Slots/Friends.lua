@@ -61,9 +61,9 @@ NuttUI.Databar:RegisterSlot({
         GameTooltip:AddLine(string.format("Online: %d", #self.friendCache), 1, 1, 1)
 
         for _, info in ipairs(self.friendCache) do
-            local classColor = info.className and C_ClassColor.GetClassColor(info.className)
-            if classColor then
-                GameTooltip:AddDoubleLine(info.name, info.area, classColor.r, classColor.g, classColor.b, 1, 1, 1)
+            if info.className then
+                local r, g, b = NuttUI:GetClassColorRGB(info.className)
+                GameTooltip:AddDoubleLine(info.name, info.area, r, g, b, 1, 1, 1)
             else
                 local r, g, b = 1, 1, 1
                 if info.type == "BNET" then r, g, b = 0.5, 0.8, 1 end
@@ -140,12 +140,10 @@ NuttUI.Databar:RegisterSlot({
                         whisperMenu:CreateTitle("No online friends")
                     else
                         for _, f in ipairs(friends) do
-                            local color = f.class and C_ClassColor.GetClassColor(f.class)
                             local text = f.display or f.name
                             if f.bnet then text = text .. " (|cff00ccff" .. f.bnet .. "|r)" end
 
-                            local displayText = text
-                            if color then displayText = color:WrapTextInColorCode(text) end
+                            local displayText = NuttUI:WrapTextInClassColor(text, f.class)
 
                             inviteMenu:CreateButton(displayText, function() C_PartyInfo.InviteUnit(f.name) end)
                             whisperMenu:CreateButton(displayText,
